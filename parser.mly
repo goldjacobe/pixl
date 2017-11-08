@@ -8,8 +8,12 @@ open Ast
 %token PLUS MINUS TIMES DIVIDE ASSIGN NOT
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
 %token RETURN IF ELSE FOR WHILE INT BOOL VOID
+(* our added tokens *)
+%token EXP ADDASS PIXEL
+(* end of our added tokens *)
 %token <int> LITERAL
 %token <string> ID
+%token <string> STR_LIT
 %token EOF
 
 %nonassoc NOELSE
@@ -88,6 +92,7 @@ expr:
   | TRUE             { BoolLit(true) }
   | FALSE            { BoolLit(false) }
   | ID               { Id($1) }
+  | STR_LIT          { StringLit($1) }
   | expr PLUS   expr { Binop($1, Add,   $3) }
   | expr MINUS  expr { Binop($1, Sub,   $3) }
   | expr TIMES  expr { Binop($1, Mult,  $3) }
