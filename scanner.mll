@@ -35,6 +35,20 @@ rule token = parse
 | "void"   { VOID }
 | "true"   { TRUE }
 | "false"  { FALSE }
+
+(* our added tokens *)
+| '^'      { EXP }
+| '"'      { STR_LIT(stringdef "") }
+| '''      { SQUOTE }
+| "+="     { ADDASS }
+| "float"  { FLOAT }
+| "char"   { CHAR }
+| "pixel"  { PIXEL }
+stringdef oldString = parse
+[^ '"']+ as s { oldString ^ s }
+| '"' { oldString }
+(* end of our added tokens *)
+
 | ['0'-'9']+ as lxm { LITERAL(int_of_string lxm) }
 | ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as lxm { ID(lxm) }
 | eof { EOF }
