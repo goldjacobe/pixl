@@ -35,24 +35,35 @@ rule token = parse
 | "void"   { VOID }
 | "true"   { TRUE }
 | "false"  { FALSE }
-
 (* our added tokens *)
 | '^'      { EXP }
-| '"'      { STR_LIT(stringdef "") }
-| '''      { SQUOTE }
+| '"'      { read_string (Buffer.create 17) lexbuf }
 | "+="     { ADDASS }
-| "float"  { FLOAT }
+(*| "float"  { FLOAT }
 | "char"   { CHAR }
-| "pixel"  { PIXEL }
-stringdef oldString = parse
-[^ '"']+ as s { oldString ^ s }
-| '"' { oldString }
-(* end of our added tokens *)
-
+| "pixel"  { PIXEL } *)
 | ['0'-'9']+ as lxm { LITERAL(int_of_string lxm) }
 | ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as lxm { ID(lxm) }
 | eof { EOF }
 | _ as char { raise (Failure("illegal character " ^ Char.escaped char)) }
+
+(* sourced from https://realworldocaml.org/v1/en/html/parsing-with-ocamllex-and-menhir.html *)
+and read_string buf =
+  parse
+  | '"'       { STR_LIT (Buffer.contents buf) }
+  | '\\' '/'  { Buffer.add_char buf '/'; read_string buf lexbuf }
+  | '\\' '\\' { Buffer.add_char buf '\\'; read_string buf lexbuf }
+  | '\\' 'b'  { Buffer.add_char buf '\b'; read_string buf lexbuf }
+  | '\\' 'f'  { Buffer.add_char buf '\012'; read_string buf lexbuf }
+  | '\\' 'n'  { Buffer.add_char buf '\n'; read_string buf lexbuf }
+  | '\\' 'r'  { Buffer.add_char buf '\r'; read_string buf lexbuf }
+  | '\\' 't'  { Buffer.add_char buf '\t'; read_string buf lexbuf }
+  | [^ '"' '\\']+
+    { Buffer.add_string buf (Lexing.lexeme lexbuf);
+      read_string buf lexbuf
+    }
+  | _ { raise (Failure ("Illegal string character: " ^ Lexing.lexeme lexbuf)) }
+  | eof { raise (Failure ("String is not terminated")) }
 
 and comment = parse
   "*/" { token lexbuf }
