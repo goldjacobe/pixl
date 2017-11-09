@@ -8,9 +8,9 @@ open Ast
 %token PLUS MINUS TIMES DIVIDE ASSIGN NOT
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
 %token RETURN IF ELSE FOR WHILE INT BOOL VOID
-(* our added tokens *)
+/* our added tokens */
 %token EXP ADDASS PIXEL
-(* end of our added tokens *)
+/* end of our added tokens */
 %token <int> LITERAL
 %token <string> ID
 %token <string> STR_LIT
