@@ -33,6 +33,7 @@ rule token = parse
 | "int"    { INT }
 | "bool"   { BOOL }
 | "void"   { VOID }
+| "string" { STRING }
 | "true"   { TRUE }
 | "false"  { FALSE }
 (* our added tokens *)

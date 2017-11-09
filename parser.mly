@@ -7,7 +7,7 @@ open Ast
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA
 %token PLUS MINUS TIMES DIVIDE ASSIGN NOT
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
-%token RETURN IF ELSE FOR WHILE INT BOOL VOID
+%token RETURN IF ELSE FOR WHILE INT BOOL VOID STRING
 /* our added tokens */
 %token EXP ADDASS PIXEL
 /* end of our added tokens */
@@ -60,6 +60,7 @@ typ:
     INT { Int }
   | BOOL { Bool }
   | VOID { Void }
+  | STRING {String }
 
 vdecl_list:
     /* nothing */    { [] }
