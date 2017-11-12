@@ -67,7 +67,8 @@ vdecl_list:
   | vdecl_list vdecl { $2 :: $1 }
 
 vdecl:
-   typ ID SEMI { ($1, $2) }
+   typ ID SEMI { ($1, $2) } ASSIGN expr
+   | typ LBRAC RBRAC LBRAC RBRAC ID ASSIGN expr
 
 stmt_list:
     /* nothing */  { [] }
@@ -83,6 +84,7 @@ stmt:
   | FOR LPAREN expr_opt SEMI expr SEMI expr_opt RPAREN stmt
      { For($3, $5, $7, $9) }
   | WHILE LPAREN expr RPAREN stmt { While($3, $5) }
+  | For 
 
 expr_opt:
     /* nothing */ { Noexpr }
@@ -111,6 +113,8 @@ expr:
   | ID ASSIGN expr   { Assign($1, $3) }
   | ID LPAREN actuals_opt RPAREN { Call($1, $3) }
   | LPAREN expr RPAREN { $2 }
+  | ID ADDASS expr
+  | NEW typ LBRAC expr RBRAC LBRAC expr RBRAC
 
 actuals_opt:
     /* nothing */ { [] }
