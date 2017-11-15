@@ -9,6 +9,8 @@ rule token = parse
 | ')'      { RPAREN }
 | '{'      { LBRACE }
 | '}'      { RBRACE }
+| '['      { LBRAC }
+| ']'      { RBRAC }
 | ';'      { SEMI }
 | ','      { COMMA }
 | '+'      { PLUS }
@@ -36,13 +38,16 @@ rule token = parse
 | "string" { STRING }
 | "true"   { TRUE }
 | "false"  { FALSE }
+| "matrix"    { MATRIX }
 (* our added tokens *)
 | '^'      { EXP }
 | '"'      { read_string (Buffer.create 17) lexbuf }
 | "+="     { ADDASS }
-(*| "float"  { FLOAT }
+| "float"  { FLOAT }
+| "file"   { FILE }
+| "colon"  { COLON }
 | "char"   { CHAR }
-| "pixel"  { PIXEL } *)
+| "pixel"  { PIXEL }
 | ['0'-'9']+ as lxm { LITERAL(int_of_string lxm) }
 | ['a'-'z' 'A'-'Z']['a'-'z' 'A'-'Z' '0'-'9' '_']* as lxm { ID(lxm) }
 | eof { EOF }

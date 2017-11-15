@@ -5,7 +5,7 @@ type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
 
 type uop = Neg | Not
 
-type typ = Int | Bool | Void | String
+type typ = Int | Bool | Void | String | Float | Pixl | Char | File
 
 type bind = typ * string
 
@@ -17,8 +17,10 @@ type expr =
   | Binop of expr * op * expr
   | Unop of uop * expr
   | Assign of string * expr
+  | Addass of string * expr
   | Call of string * expr list
   | Noexpr
+  | Matrix of typ * expr * expr
 
 type stmt =
     Block of stmt list
@@ -27,6 +29,7 @@ type stmt =
   | If of expr * stmt * stmt
   | For of expr * expr * expr * stmt
   | While of expr * stmt
+  | EFor of typ * string * string * stmt
 
 type func_decl = {
     typ : typ;
@@ -90,6 +93,10 @@ let string_of_typ = function
   | Bool -> "bool"
   | Void -> "void"
   | String -> "string"
+  | Pixl -> "pixl"
+  | Char -> "char"
+  | File -> "file"
+  | Float -> "float"
 
 let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
 

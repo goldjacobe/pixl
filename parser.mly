@@ -67,7 +67,9 @@ vdecl_list:
   | vdecl_list vdecl { $2 :: $1 }
 
 vdecl:
-   typ ID SEMI { ($1, $2) }
+   /* should this be expr or stmt? */
+   typ ID ASSIGN expr SEMI { Assign($2, $4) }
+   | typ LBRAC RBRAC LBRAC RBRAC ASSIGN ID expr SEMI { Assign($7, $8) }
 
 stmt_list:
     /* nothing */  { [] }
@@ -83,6 +85,7 @@ stmt:
   | FOR LPAREN expr_opt SEMI expr SEMI expr_opt RPAREN stmt
      { For($3, $5, $7, $9) }
   | WHILE LPAREN expr RPAREN stmt { While($3, $5) }
+  | FOR LPAREN typ ID COLON ID RPAREN stmt { EFor($3, $4, $6, $8) }
 
 expr_opt:
     /* nothing */ { Noexpr }
@@ -111,6 +114,8 @@ expr:
   | ID ASSIGN expr   { Assign($1, $3) }
   | ID LPAREN actuals_opt RPAREN { Call($1, $3) }
   | LPAREN expr RPAREN { $2 }
+  | ID ADDASS expr { Addass($1, $3) }
+  | MATRIX typ LBRAC expr RBRAC LBRAC expr RBRAC { Matrix($2, $4, $7) }
 
 actuals_opt:
     /* nothing */ { [] }
