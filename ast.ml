@@ -5,7 +5,7 @@ type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
 
 type uop = Neg | Not
 
-type typ = Int | Bool | Void | String | Float | Pixl | Char | File
+type typ = Int | Bool | Void | String | Float | Pixel | Char | File
 
 type bind = typ * string
 
@@ -94,7 +94,7 @@ let string_of_typ = function
   | Bool -> "bool"
   | Void -> "void"
   | String -> "string"
-  | Pixl -> "pixl"
+  | Pixel -> "pixel"
   | Char -> "char"
   | File -> "file"
   | Float -> "float"
