@@ -9,6 +9,7 @@ open Ast
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
 %token RETURN IF ELSE FOR WHILE INT BOOL VOID STRING
 /* our added tokens */
+%token LBRAC RBRAC
 %token EXP ADDASS PIXEL
 /* end of our added tokens */
 %token <int> LITERAL
@@ -92,30 +93,31 @@ expr_opt:
   | expr          { $1 }
 
 expr:
-    LITERAL          { Literal($1) }
-  | TRUE             { BoolLit(true) }
-  | FALSE            { BoolLit(false) }
-  | ID               { Id($1) }
-  | STR_LIT          { StringLit($1) }
-  | expr PLUS   expr { Binop($1, Add,   $3) }
-  | expr MINUS  expr { Binop($1, Sub,   $3) }
-  | expr TIMES  expr { Binop($1, Mult,  $3) }
-  | expr DIVIDE expr { Binop($1, Div,   $3) }
-  | expr EQ     expr { Binop($1, Equal, $3) }
-  | expr NEQ    expr { Binop($1, Neq,   $3) }
-  | expr LT     expr { Binop($1, Less,  $3) }
-  | expr LEQ    expr { Binop($1, Leq,   $3) }
-  | expr GT     expr { Binop($1, Greater, $3) }
-  | expr GEQ    expr { Binop($1, Geq,   $3) }
-  | expr AND    expr { Binop($1, And,   $3) }
-  | expr OR     expr { Binop($1, Or,    $3) }
-  | MINUS expr %prec NEG { Unop(Neg, $2) }
-  | NOT expr         { Unop(Not, $2) }
-  | ID ASSIGN expr   { Assign($1, $3) }
-  | ID LPAREN actuals_opt RPAREN { Call($1, $3) }
-  | LPAREN expr RPAREN { $2 }
-  | ID ADDASS expr { Addass($1, $3) }
-  | MATRIX typ LBRAC expr RBRAC LBRAC expr RBRAC { Matrix($2, $4, $7) }
+    LITERAL                                    { Literal($1) }
+  | TRUE                                       { BoolLit(true) }
+  | FALSE                                      { BoolLit(false) }
+  | ID                                         { Id($1) }
+  | STR_LIT                                    { StringLit($1) }
+  | expr PLUS   expr                           { Binop($1, Add,   $3) }
+  | expr MINUS  expr                           { Binop($1, Sub,   $3) }
+  | expr TIMES  expr                           { Binop($1, Mult,  $3) }
+  | expr DIVIDE expr                           { Binop($1, Div,   $3) }
+  | expr EQ     expr                           { Binop($1, Equal, $3) }
+  | expr NEQ    expr                           { Binop($1, Neq,   $3) }
+  | expr LT     expr                           { Binop($1, Less,  $3) }
+  | expr LEQ    expr                           { Binop($1, Leq,   $3) }
+  | expr GT     expr                           { Binop($1, Greater, $3) }
+  | expr GEQ    expr                           { Binop($1, Geq,   $3) }
+  | expr AND    expr                           { Binop($1, And,   $3) }
+  | expr OR     expr                           { Binop($1, Or,    $3) }
+  | MINUS expr %prec NEG                       { Unop(Neg, $2) }
+  | NOT expr                                   { Unop(Not, $2) }
+  | ID ASSIGN expr                             { Assign($1, $3) }
+  | ID LPAREN actuals_opt RPAREN               { Call($1, $3) }
+  | LPAREN expr RPAREN                         { $2 }
+  | ID ADDASS expr                             { Addass($1, $3) }
+  | LBRAC mat_lit RBRAC                        { MatrixLit($2) }
+  | pixel_lit                                  { PixelLit($1) }
 
 actuals_opt:
     /* nothing */ { [] }
@@ -124,3 +126,20 @@ actuals_opt:
 actuals_list:
     expr                    { [$1] }
   | actuals_list COMMA expr { $3 :: $1 }
+
+mat_lit:
+    lit_list                        { [$1] }
+  | mat_lit SEMI lit_list         { $3 :: $1 }
+
+lit_list:
+    lit                             { [$1] }
+  | lit_list COMMA lit            { $3 :: $1 }
+
+lit:
+    LITERAL                         { $1 }
+  | TRUE                            { $1 }
+  | FALSE                           { $1 }
+  | pixel_lit                       { PixelLit($1) }
+
+pixel_lit:
+    LPAREN LITERAL COMMA LITERAL COMMA LITERAL COMMA LITERAL RPAREN { ($2, $4, $6, $8) }

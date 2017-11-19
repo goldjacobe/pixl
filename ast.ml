@@ -13,6 +13,8 @@ type expr =
     Literal of int
   | StringLit of string
   | BoolLit of bool
+  | MatrixLit of expr list list
+  | PixelLit of int * int * int * int
   | Id of string
   | Binop of expr * op * expr
   | Unop of uop * expr
@@ -20,7 +22,6 @@ type expr =
   | Addass of string * expr
   | Call of string * expr list
   | Noexpr
-  | Matrix of typ * expr * expr
 
 type stmt =
     Block of stmt list
