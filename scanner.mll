@@ -45,7 +45,7 @@ rule token = parse
 | "+="     { ADDASS }
 | "float"  { FLOAT }
 | "file"   { FILE }
-| "colon"  { COLON }
+| ":"  { COLON }
 | "char"   { CHAR }
 | "pixel"  { PIXEL }
 | ['0'-'9']+ as lxm { LITERAL(int_of_string lxm) }
