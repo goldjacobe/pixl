@@ -12,6 +12,8 @@ http://llvm.moe/ocaml/
 
 *)
 
+open Ast
+open Semant
 module L = Llvm
 module A = Ast
 
@@ -104,6 +106,7 @@ let translate (globals, functions) =
           | A.Leq     -> L.build_icmp L.Icmp.Sle
           | A.Greater -> L.build_icmp L.Icmp.Sgt
           | A.Geq     -> L.build_icmp L.Icmp.Sge
+          | A.Addass  -> L.build_add L.Icmp eq
           ) e1' e2' "tmp" builder
       | A.Unop(op, e) ->
           let e' = expr builder e in
