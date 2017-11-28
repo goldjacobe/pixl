@@ -118,8 +118,6 @@ let translate (globals, functions) =
       | A.Call ("print", [e]) | A.Call ("printb", [e]) ->
           L.build_call printf_func [| int_format_str ; (expr builder e) |]
             "printf" builder
-      | A.Call ("printbig", [e]) ->
-          L.build_call printbig_func [| (expr builder e) |] "printbig" builder
       | A.Call (f, act) ->
          let (fdef, fdecl) = StringMap.find f function_decls in
          let actuals = List.rev (List.map (expr builder) (List.rev act)) in

@@ -1,11 +1,12 @@
 (* Abstract Syntax Tree and functions for printing it *)
 
 type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
-          And | Or
+          And | Or | Addass
 
 type uop = Neg | Not
 
-type typ = Int | Bool | Void | String | Float | Pixel | Char | File
+type typ = Int | Bool | Void | String | Float | Pixel | Char | File |
+           Array of typ * int | Matrix of typ * int * int
 
 type bind = typ * string
 
@@ -57,6 +58,7 @@ let string_of_op = function
   | Geq -> ">="
   | And -> "&&"
   | Or -> "||"
+  | Addass -> "+="
 
 let string_of_uop = function
     Neg -> "-"
