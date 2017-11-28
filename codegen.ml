@@ -30,6 +30,7 @@ let translate (globals, functions) =
     | A.Bool -> i1_t
     | A.Char -> i8_t
     | A.String -> str_t
+    | A.Pixel -> i64_t in
 
   (* Declare each global variable; remember its value in a map *)
   let global_vars =
