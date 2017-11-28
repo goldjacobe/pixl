@@ -38,13 +38,9 @@ rule token = parse
 | "string" { STRING }
 | "true"   { TRUE }
 | "false"  { FALSE }
-| "matrix"    { MATRIX }
-(* our added tokens *)
 | '^'      { EXP }
 | '"'      { read_string (Buffer.create 17) lexbuf }
 | "+="     { ADDASS }
-| "float"  { FLOAT }
-| "file"   { FILE }
 | ":"  { COLON }
 | "char"   { CHAR }
 | "pixel"  { PIXEL }

@@ -8,10 +8,8 @@ open Ast
 %token PLUS MINUS TIMES DIVIDE ASSIGN NOT
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
 %token RETURN IF ELSE FOR WHILE INT BOOL VOID STRING
-/* our added tokens */
-%token LBRAC RBRAC
+%token LBRAC RBRAC COLON CHAR
 %token EXP ADDASS PIXEL
-/* end of our added tokens */
 %token <int> LITERAL
 %token <string> ID
 %token <string> STR_LIT
@@ -61,16 +59,16 @@ typ:
     INT { Int }
   | BOOL { Bool }
   | VOID { Void }
-  | STRING {String }
+  | STRING { String }
+  | PIXEL { Pixel }
 
 vdecl_list:
     /* nothing */    { [] }
   | vdecl_list vdecl { $2 :: $1 }
 
 vdecl:
-   /* should this be expr or stmt? */
-   typ ID ASSIGN expr SEMI { Assign($2, $4) }
-   | typ LBRAC RBRAC LBRAC RBRAC ASSIGN ID expr SEMI { Assign($7, $8) }
+    typ ID SEMI { ($1, $2) }
+    | typ LBRAC RBRAC LBRAC RBRAC ASSIGN ID expr SEMI { Assign($7, $8) }
 
 stmt_list:
     /* nothing */  { [] }
@@ -117,7 +115,7 @@ expr:
   | LPAREN expr RPAREN                         { $2 }
   | ID ADDASS expr                             { Addass($1, $3) }
   | LBRAC mat_lit RBRAC                        { MatrixLit($2) }
-  | pixel_lit                                  { PixelLit($1) }
+  | pixel_lit                                  { $1 }
 
 actuals_opt:
     /* nothing */ { [] }
@@ -136,10 +134,10 @@ lit_list:
   | lit_list COMMA lit            { $3 :: $1 }
 
 lit:
-    LITERAL                         { $1 }
-  | TRUE                            { $1 }
-  | FALSE                           { $1 }
-  | pixel_lit                       { PixelLit($1) }
+    LITERAL                         { Literal($1) }
+  | TRUE                            { BoolLit(true) }
+  | FALSE                           { BoolLit(false) }
+  | pixel_lit                       { $1 }
 
 pixel_lit:
-    LPAREN LITERAL COMMA LITERAL COMMA LITERAL COMMA LITERAL RPAREN { ($2, $4, $6, $8) }
+    LPAREN LITERAL COMMA LITERAL COMMA LITERAL COMMA LITERAL RPAREN { PixelLit($2, $4, $6, $8) }
