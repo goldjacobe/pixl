@@ -59,7 +59,8 @@ typ:
     INT { Int }
   | BOOL { Bool }
   | VOID { Void }
-  | STRING {String }
+  | STRING { String }
+  | PIXEL { Pixel }
 
 vdecl_list:
     /* nothing */    { [] }
