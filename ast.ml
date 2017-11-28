@@ -5,8 +5,7 @@ type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
 
 type uop = Neg | Not
 
-type typ = Int | Bool | Void | String | Float | Pixel | Char | File |
-           Array of typ * int | Matrix of typ * int * int
+type typ = Int | Bool | Void | String | Float | Pixel | Char | File | Matrix of typ * int * int
 
 type bind = typ * string
 
