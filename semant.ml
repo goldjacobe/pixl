@@ -88,8 +88,9 @@ let check (globals, functions) =
 
     (* Return the type of an expression or throw an exception *)
     let rec expr = function
-	Literal _ -> Int
+	     Literal _ -> Int
       | BoolLit _ -> Bool
+      | PixelLit _ -> Pixel
       | Id s -> type_of_identifier s
       | StringLit _ -> String
       | Binop(e1, op, e2) as e -> let t1 = expr e1 and t2 = expr e2 in

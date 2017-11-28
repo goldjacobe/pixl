@@ -56,11 +56,12 @@ formal_list:
   | formal_list COMMA typ ID { ($3,$4) :: $1 }
 
 typ:
-    INT { Int }
-  | BOOL { Bool }
-  | VOID { Void }
-  | STRING { String }
-  | PIXEL { Pixel }
+    INT                             { Int }
+  | BOOL                            { Bool }
+  | VOID                            { Void }
+  | STRING                          { String }
+  | PIXEL                           { Pixel }
+  | typ LBRAC expr COMMA expr RBRAC { Matrix($1, $3, $5) }
 
 vdecl_list:
     /* nothing */    { [] }
@@ -68,7 +69,6 @@ vdecl_list:
 
 vdecl:
     typ ID SEMI { ($1, $2) }
-    | typ LBRAC RBRAC LBRAC RBRAC ASSIGN ID expr SEMI { Assign($7, $8) }
 
 stmt_list:
     /* nothing */  { [] }
@@ -113,8 +113,8 @@ expr:
   | ID ASSIGN expr                             { Assign($1, $3) }
   | ID LPAREN actuals_opt RPAREN               { Call($1, $3) }
   | LPAREN expr RPAREN                         { $2 }
-  | ID ADDASS expr                             { Addass($1, $3) }
-  | LBRAC mat_lit RBRAC                        { MatrixLit($2) }
+  /*| ID ADDASS expr                             { Addass($1, $3) }*/
+  /*| LBRAC mat_lit RBRAC                        { MatrixLit($2) }*/
   | pixel_lit                                  { $1 }
 
 actuals_opt:
@@ -125,13 +125,13 @@ actuals_list:
     expr                    { [$1] }
   | actuals_list COMMA expr { $3 :: $1 }
 
-mat_lit:
+/*mat_lit:
     lit_list                        { [$1] }
   | mat_lit SEMI lit_list         { $3 :: $1 }
 
 lit_list:
     lit                             { [$1] }
-  | lit_list COMMA lit            { $3 :: $1 }
+  | lit_list COMMA lit            { $3 :: $1 }*/
 
 lit:
     LITERAL                         { Literal($1) }
