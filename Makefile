@@ -5,7 +5,7 @@
 # Easiest way to build: using ocamlbuild, which in turn uses ocamlfind
 
 .PHONY : all
-all : pixl.native printbig.o
+all : pixl.native
 
 .PHONY : pixl.native
 pixl.native :

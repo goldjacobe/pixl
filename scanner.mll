@@ -38,14 +38,10 @@ rule token = parse
 | "string" { STRING }
 | "true"   { TRUE }
 | "false"  { FALSE }
-| "matrix"    { MATRIX }
-(* our added tokens *)
 | '^'      { EXP }
 | '"'      { read_string (Buffer.create 17) lexbuf }
 | "+="     { ADDASS }
-| "float"  { FLOAT }
-| "file"   { FILE }
-| "colon"  { COLON }
+| ":"  { COLON }
 | "char"   { CHAR }
 | "pixel"  { PIXEL }
 | ['0'-'9']+ as lxm { LITERAL(int_of_string lxm) }
