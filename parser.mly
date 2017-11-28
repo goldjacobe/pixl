@@ -59,7 +59,8 @@ typ:
     INT { Int }
   | BOOL { Bool }
   | VOID { Void }
-  | STRING {String }
+  | STRING { String }
+  | PIXEL { Pixel }
 
 vdecl_list:
     /* nothing */    { [] }
@@ -67,6 +68,7 @@ vdecl_list:
 
 vdecl:
     typ ID SEMI { ($1, $2) }
+    | typ LBRAC RBRAC LBRAC RBRAC ASSIGN ID expr SEMI { Assign($7, $8) }
 
 stmt_list:
     /* nothing */  { [] }
