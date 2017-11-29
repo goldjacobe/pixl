@@ -112,7 +112,7 @@ expr:
   | ID ASSIGN expr                             { Assign($1, $3) }
   | ID LPAREN actuals_opt RPAREN               { Call($1, $3) }
   | LPAREN expr RPAREN                         { $2 }
-  | ID ADDASS expr                             { Addass($1, $3) }
+  /* | ID ADDASS expr                             { Addass($1, $3) } */
   | LBRAC mat_lit RBRAC                        { MatrixLit($2) }
   | pixel_lit                                  { $1 }
 
