@@ -11,7 +11,7 @@ and expr =
     Literal of int
   | StringLit of string
   | BoolLit of bool
-  | MatrixLit of expr
+  | MatrixLit of expr list list
   | PixelLit of int * int * int * int
   | Id of string
   | Binop of expr * op * expr

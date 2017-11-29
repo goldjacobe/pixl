@@ -114,7 +114,7 @@ expr:
   | ID LPAREN actuals_opt RPAREN               { Call($1, $3) }
   | LPAREN expr RPAREN                         { $2 }
   /*| ID ADDASS expr                             { Addass($1, $3) }*/
-  /*| LBRAC mat_lit RBRAC                        { MatrixLit($2) }*/
+  | LBRAC mat_lit RBRAC                        { MatrixLit($2) }
   | pixel_lit                                  { $1 }
 
 actuals_opt:
@@ -125,19 +125,13 @@ actuals_list:
     expr                    { [$1] }
   | actuals_list COMMA expr { $3 :: $1 }
 
-/*mat_lit:
-    lit_list                        { [$1] }
-  | mat_lit SEMI lit_list         { $3 :: $1 }
+mat_lit:
+    row_lit                        { [$1] }
+  | mat_lit SEMI row_lit         { $3 :: $1 }
 
-lit_list:
-    lit                             { [$1] }
-  | lit_list COMMA lit            { $3 :: $1 }*/
-
-lit:
-    LITERAL                         { Literal($1) }
-  | TRUE                            { BoolLit(true) }
-  | FALSE                           { BoolLit(false) }
-  | pixel_lit                       { $1 }
+row_lit:
+    expr                             { [$1] }
+  | row_lit COMMA expr            { $3 :: $1 }
 
 pixel_lit:
     LPAREN LITERAL COMMA LITERAL COMMA LITERAL COMMA LITERAL RPAREN { PixelLit($2, $4, $6, $8) }
