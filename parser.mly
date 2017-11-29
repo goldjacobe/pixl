@@ -61,6 +61,7 @@ typ:
   | VOID { Void }
   | STRING { String }
   | PIXEL { Pixel }
+  
 
 vdecl_list:
     /* nothing */    { [] }
