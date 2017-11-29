@@ -102,6 +102,7 @@ let check (globals, functions) =
           | And | Or when t1 = Bool && t2 = Bool -> Bool
           | Add when t1 = String && t2 = String -> String
           | Add when t1 = Pixel && t2 = Pixel -> Pixel
+          | Add | Sub | Mult | Div when t1 = Matrix && t2 = Matrix -> Matrix
           | _ -> raise (Failure ("illegal binary operator " ^
               string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
               string_of_typ t2 ^ " in " ^ string_of_expr e))
