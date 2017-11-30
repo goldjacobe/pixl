@@ -88,9 +88,10 @@ let check (globals, functions) =
 
     (* Return the type of an expression or throw an exception *)
     let rec expr = function
-	     Literal _ -> Int
+	    Literal _ -> Int
       | BoolLit _ -> Bool
       | PixelLit _ -> Pixel
+      | MatrixLit _ -> Matrix
       | Id s -> type_of_identifier s
       | StringLit _ -> String
       | Binop(e1, op, e2) as e -> let t1 = expr e1 and t2 = expr e2 in
@@ -100,7 +101,7 @@ let check (globals, functions) =
 	        | Less | Leq | Greater | Geq when t1 = Int && t2 = Int -> Bool
           | And | Or when t1 = Bool && t2 = Bool -> Bool
           | Add when t1 = String && t2 = String -> String
-          | Equal when t1 = String && t2 = String -> Bool
+          | Add when t1 = Pixel && t2 = Pixel -> Pixel
           | _ -> raise (Failure ("illegal binary operator " ^
               string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
               string_of_typ t2 ^ " in " ^ string_of_expr e))
