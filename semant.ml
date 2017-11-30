@@ -100,8 +100,12 @@ let check (globals, functions) =
       | MatrixLit m -> (match m with
         [] -> Matrix(Int, Literal(0), Literal(0))
         | [[]] -> Matrix(Int,Literal(1),Literal(0))
-        |(x::y)::z -> Matrix(expr x,Literal((List.length z)+1),Literal((List.length y)+1))
-      )
+        | (x::y)::z -> let eq = check_if_equal m
+          in
+        (match eq with 
+          | true -> Matrix(expr x,Literal((List.length z)+1),Literal((List.length y)+1))
+          | false ->  raise (Failure ("Matrix has lists of uneven length"))
+        ))
       | Id s -> type_of_identifier s
       | StringLit _ -> String
       | Binop(e1, op, e2) as e -> let t1 = expr e1 and t2 = expr e2 in
