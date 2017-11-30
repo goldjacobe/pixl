@@ -26,6 +26,12 @@ let check (globals, functions) =
     | _ -> ()
   in
 
+  let rec check_if_equal = function
+    | [] | _::[]  -> true
+    | h1::h2::[]  -> List.length h1=List.length h2
+    | h1::h2::tl  -> check_if_equal (h1::[h2]) && check_if_equal (h2::tl)
+  in
+
   (* Raise an exception of the given rvalue type cannot be assigned to
      the given lvalue type *)
   let check_assign lvaluet rvaluet err =
@@ -91,7 +97,11 @@ let check (globals, functions) =
 	    Literal _ -> Int
       | BoolLit _ -> Bool
       | PixelLit _ -> Pixel
-      | MatrixLit _ -> Matrix
+      | MatrixLit m -> (match m with
+        [] -> Matrix(Int, Literal(0), Literal(0))
+        | [[]] -> Matrix(Int,Literal(1),Literal(0))
+        |(x::y)::z -> Matrix(expr x,Literal((List.length y)+1),Literal((List.length z)+1))
+      )
       | Id s -> type_of_identifier s
       | StringLit _ -> String
       | Binop(e1, op, e2) as e -> let t1 = expr e1 and t2 = expr e2 in
@@ -102,7 +112,6 @@ let check (globals, functions) =
           | And | Or when t1 = Bool && t2 = Bool -> Bool
           | Add when t1 = String && t2 = String -> String
           | Add when t1 = Pixel && t2 = Pixel -> Pixel
-          | Add | Sub | Mult | Div when t1 = Matrix && t2 = Matrix -> Matrix
           | _ -> raise (Failure ("illegal binary operator " ^
               string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
               string_of_typ t2 ^ " in " ^ string_of_expr e))
