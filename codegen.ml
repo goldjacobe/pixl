@@ -29,7 +29,8 @@ let translate (globals, functions) =
       A.Int -> i64_t
     | A.Bool -> i1_t
     | A.Char -> i8_t
-    | A.String -> str_t in
+    | A.String -> str_t
+    | A.Pixel -> L.pointer_type(L.i64_type context) in
 
   (* Declare each global variable; remember its value in a map *)
   let global_vars =
@@ -88,7 +89,18 @@ let translate (globals, functions) =
       | A.StringLit s -> L.build_global_stringptr(s^"\x00") "strptr" builder
       | A.Noexpr -> L.const_int i64_t 0
       | A.Id s -> L.build_load (lookup s) s builder
-      | A.Binop (e1, op, e2) ->
+      | A.PixelLit(e1,e2,e3,e4) -> 
+      	  let size = L.const_int i64_t 4 in
+      	  let typ = L.pointer_type i64_t in
+      	  let arr = L.build_array_malloc typ size "pixel1" builder in 
+      	  let arr = L.build_pointercast arr typ "pixel2" builder in
+      	  let arr_ptr = L.build_gep arr [|L.const_int i64_t 0|] "pixel3" builder in ignore(L.build_store (L.const_int i64_t e1) arr_ptr builder);
+      	  let arr_ptr = L.build_gep arr [|L.const_int i64_t 1|] "pixel4" builder in ignore(L.build_store (L.const_int i64_t e2) arr_ptr builder);
+      	  let arr_ptr = L.build_gep arr [|L.const_int i64_t 2|] "pixel5" builder in ignore(L.build_store (L.const_int i64_t e2) arr_ptr builder);
+      	  let arr_ptr = L.build_gep arr [|L.const_int i64_t 3|] "pixel6" builder in ignore(L.build_store (L.const_int i64_t e2) arr_ptr builder);
+      	  arr
+
+	  | A.Binop (e1, op, e2) ->
           let e1' = expr builder e1
           and e2' = expr builder e2 in
           (match op with
