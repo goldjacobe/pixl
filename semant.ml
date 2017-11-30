@@ -100,7 +100,7 @@ let check (globals, functions) =
       | MatrixLit m -> (match m with
         [] -> Matrix(Int, Literal(0), Literal(0))
         | [[]] -> Matrix(Int,Literal(1),Literal(0))
-        |(x::y)::z -> Matrix(expr x,Literal((List.length y)+1),Literal((List.length z)+1))
+        |(x::y)::z -> Matrix(expr x,Literal((List.length z)+1),Literal((List.length y)+1))
       )
       | Id s -> type_of_identifier s
       | StringLit _ -> String
