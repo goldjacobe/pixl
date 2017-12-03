@@ -35,7 +35,12 @@ let check (globals, functions) =
   (* Raise an exception of the given rvalue type cannot be assigned to
      the given lvalue type *)
   let check_assign lvaluet rvaluet err =
-     if lvaluet == rvaluet then lvaluet else raise err
+    match lvaluet with
+    | Matrix(lt,le1,le2) -> (match rvaluet with
+      | Matrix(rt,re1,re2) -> if rt = lt && re1 = le1 && re2 = le2 then lvaluet else raise err
+      | _ -> raise err
+    )
+    | _ -> if lvaluet == rvaluet then lvaluet else raise err
   in
 
   (**** Checking Global Variables ****)

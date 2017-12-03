@@ -69,6 +69,7 @@ let rec string_of_expr = function
   | BoolLit(true) -> "true"
   | BoolLit(false) -> "false"
   | PixelLit(v1,v2,v3,v4) -> "(" ^ string_of_int v1 ^ "," ^ string_of_int v2 ^ "," ^ string_of_int v3 ^ "," ^ string_of_int v4 ^ ")"
+  | MatrixLit(m) -> "(" ^ "matrix " ^ ")"
   | StringLit(s) -> s
   | Id(s) -> s
   | Binop(e1, o, e2) ->
