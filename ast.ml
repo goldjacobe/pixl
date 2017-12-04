@@ -5,11 +5,9 @@ type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
 
 type uop = Neg | Not
 
-type typ = Int | Bool | Void | String | Float | Pixel | Char | File | Matrix of typ * int * int
+type typ = Int | Bool | Void | String | Float | Pixel | Char | File | Matrix of typ * expr * expr
 
-type bind = typ * string
-
-type expr =
+and expr =
     Literal of int
   | StringLit of string
   | BoolLit of bool
@@ -22,6 +20,9 @@ type expr =
   | Addass of string * expr
   | Call of string * expr list
   | Noexpr
+
+type bind = typ * string
+
 
 type stmt =
     Block of stmt list
@@ -67,6 +68,8 @@ let rec string_of_expr = function
     Literal(l) -> string_of_int l
   | BoolLit(true) -> "true"
   | BoolLit(false) -> "false"
+  | PixelLit(v1,v2,v3,v4) -> "(" ^ string_of_int v1 ^ "," ^ string_of_int v2 ^ "," ^ string_of_int v3 ^ "," ^ string_of_int v4 ^ ")"
+  | MatrixLit(m) -> "(" ^ "matrix " ^ ")"
   | StringLit(s) -> s
   | Id(s) -> s
   | Binop(e1, o, e2) ->
@@ -90,7 +93,7 @@ let rec string_of_stmt = function
       string_of_expr e3  ^ ") " ^ string_of_stmt s
   | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
 
-let string_of_typ = function
+let rec string_of_typ = function
     Int -> "int"
   | Bool -> "bool"
   | Void -> "void"
@@ -99,6 +102,7 @@ let string_of_typ = function
   | Char -> "char"
   | File -> "file"
   | Float -> "float"
+  | Matrix(typ,e1,e2) -> string_of_typ typ ^ "[" ^ string_of_expr e1 ^ "," ^ string_of_expr e2 ^ "]"  
 
 let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
 
