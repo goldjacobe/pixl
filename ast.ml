@@ -12,15 +12,16 @@ and expr =
   | StringLit of string
   | BoolLit of bool
   | MatrixLit of expr list list
-  | PixelLit of int * int * int * int
+  | PixelLit of int * int * int * int (*TODO SHOULD CHANGE THESE TO EXPRS*)
   | Id of string
   | Binop of expr * op * expr
   | Unop of uop * expr
   | Assign of string * expr
   | Addass of string * expr
   | Call of string * expr list
+  | Access of string * expr
+  | Crop of string * expr * expr * expr * expr
   | Noexpr
-  | Access of string * expr 
 
 type bind = typ * string
 
@@ -80,8 +81,9 @@ let rec string_of_expr = function
   | Assign(v, e) -> v ^ " = " ^ string_of_expr e
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
+  | Access(v, e) -> v ^ "[" ^ string_of_expr e ^ "]"
+  | Crop(v, e1, e2, e3, e4) -> v ^ "<" ^ string_of_expr e1 ^ ":" ^ string_of_expr e2 ^ ", " ^ string_of_expr e3 ^ ":" ^ string_of_expr e4 ^ ">"
   | Noexpr -> ""
-  | Access(v, e) -> v ^ "[" ^ string_of_expr e ^ "]" 
 
 let rec string_of_stmt = function
     Block(stmts) ->
@@ -95,7 +97,6 @@ let rec string_of_stmt = function
       "for (" ^ string_of_expr e1  ^ " ; " ^ string_of_expr e2 ^ " ; " ^
       string_of_expr e3  ^ ") " ^ string_of_stmt s
   | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
- 
 
 let rec string_of_typ = function
     Int -> "int"
@@ -106,7 +107,7 @@ let rec string_of_typ = function
   | Char -> "char"
   | File -> "file"
   | Float -> "float"
-  | Matrix(typ,e1,e2) -> string_of_typ typ ^ "[" ^ string_of_expr e1 ^ "," ^ string_of_expr e2 ^ "]"  
+  | Matrix(typ,e1,e2) -> string_of_typ typ ^ "[" ^ string_of_expr e1 ^ "," ^ string_of_expr e2 ^ "]"
 
 let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
 
