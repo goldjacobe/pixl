@@ -129,7 +129,7 @@ actuals_list:
 
 mat_lit:
     row_lit                        { [(List.rev $1)] }
-  | mat_lit SEMI row_lit         { (List.rev $3) :: $1) }
+  | mat_lit SEMI row_lit         { (List.rev $3) :: $1 }
 
 row_lit:
     expr                             { [$1] }
