@@ -1,4 +1,7 @@
 int main() {
-	pixel p;
-	p = (50,50,50,50);
+        int a;
+        pixel p; 
+        p = (70,50,70,90);
+        a = p[3];
+        print(a);
 }

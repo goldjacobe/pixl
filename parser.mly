@@ -116,6 +116,7 @@ expr:
   /*| ID ADDASS expr                             { Addass($1, $3) }*/
   | LBRAC mat_lit RBRAC                        { MatrixLit($2) }
   | pixel_lit                                  { $1 }
+  | ID LBRAC expr RBRAC                       { Access($1, $3)}
 
 actuals_opt:
     /* nothing */ { [] }
