@@ -117,6 +117,7 @@ expr:
   | LBRAC mat_lit RBRAC                        { MatrixLit($2) }
   | pixel_lit                                  { $1 }
   | ID LBRAC expr RBRAC                       { Access($1, $3)}
+  | ID LANGLE expr COLON expr COMMA expr COLON expr RANGLE { Crop($1, $3, $5, $7, $9) }
 
 actuals_opt:
     /* nothing */ { [] }
