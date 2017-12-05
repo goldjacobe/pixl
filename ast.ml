@@ -20,6 +20,7 @@ and expr =
   | Addass of string * expr
   | Call of string * expr list
   | Noexpr
+  | Access of string * expr 
 
 type bind = typ * string
 
@@ -68,6 +69,7 @@ let rec string_of_expr = function
     Literal(l) -> string_of_int l
   | BoolLit(true) -> "true"
   | BoolLit(false) -> "false"
+  | MatrixLit(e1) -> "TODO"
   | PixelLit(v1,v2,v3,v4) -> "(" ^ string_of_int v1 ^ "," ^ string_of_int v2 ^ "," ^ string_of_int v3 ^ "," ^ string_of_int v4 ^ ")"
   | StringLit(s) -> s
   | Id(s) -> s
@@ -78,6 +80,7 @@ let rec string_of_expr = function
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
   | Noexpr -> ""
+  | Access(v, e) -> v ^ "[" ^ string_of_expr e ^ "]" 
 
 let rec string_of_stmt = function
     Block(stmts) ->
@@ -91,6 +94,7 @@ let rec string_of_stmt = function
       "for (" ^ string_of_expr e1  ^ " ; " ^ string_of_expr e2 ^ " ; " ^
       string_of_expr e3  ^ ") " ^ string_of_stmt s
   | While(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
+ 
 
 let rec string_of_typ = function
     Int -> "int"

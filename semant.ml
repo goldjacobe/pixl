@@ -25,11 +25,22 @@ let check (globals, functions) =
       (Void, n) -> raise (Failure (exceptf n))
     | _ -> ()
   in
-
+  
+  let rec check_if_equal = function 
+    | [] |_::[] -> true
+    | h1::h2::[] -> List.length h1 = List.length h2
+    | h1::h2::t1 -> check_if_equal(h1::[h2]) && check_if_equal(h2::t1)
+  
+  in
   (* Raise an exception of the given rvalue type cannot be assigned to
      the given lvalue type *)
   let check_assign lvaluet rvaluet err =
-     if lvaluet == rvaluet then lvaluet else raise err
+     match lvaluet with
+     | Matrix(lt,le1,le2) -> (match rvaluet with 
+       | Matrix(rt,re1,re2) -> if rt = lt && re1 = le1 && re2 = le2 then lvaluet else raise err
+       | _ -> raise err
+     )
+     | _-> if lvaluet == rvaluet then lvaluet else raise err 
   in
 
   (**** Checking Global Variables ****)
@@ -48,7 +59,7 @@ let check (globals, functions) =
 
   (* Function declaration for a named function *)
   let built_in_decls =  StringMap.singleton "print"
-    { typ = Void; fname = "print"; formals = [(String, "s")];
+    { typ = Void; fname = "print"; formals = [(Int, "s")];
       locals = []; body = [] }
   in
 
@@ -91,9 +102,19 @@ let check (globals, functions) =
 	    Literal _ -> Int
       | BoolLit _ -> Bool
       | PixelLit _ -> Pixel
-      | MatrixLit _ -> Matrix
+      | MatrixLit m -> (match m with
+	[] -> Matrix(Int, Literal(0), Literal(1))
+        | [[]] -> Matrix(Int, Literal(1), Literal(0))
+        | (x::y)::z -> let eq = check_if_equal m
+          in 
+        (match eq with 
+          | true -> Matrix(expr x, Literal((List.length z) + 1), Literal((List.length y) + 1))
+          | false -> raise (Failure ("Matrix has lists of uneven length"))
+        )) 
+        
       | Id s -> type_of_identifier s
       | StringLit _ -> String
+      | Access(v,e) -> Int
       | Binop(e1, op, e2) as e -> let t1 = expr e1 and t2 = expr e2 in
 	      (match op with
           Add | Sub | Mult | Div when t1 = Int && t2 = Int -> Int
