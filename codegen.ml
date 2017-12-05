@@ -89,6 +89,24 @@ let translate (globals, functions) =
       | A.StringLit s -> L.build_global_stringptr(s^"\x00") "strptr" builder
       | A.Noexpr -> L.const_int i64_t 0
       | A.Id s -> L.build_load (lookup s) s builder
+      | A.MatrixLit(li) -> let rows = List.length li in 
+                           let columns = List.length (List.hd li) in 
+                           let mat = rows * columns in
+                           let size = L.const_int i64_t mat in 
+                           let typ = L.pointer_type i64_t in
+                           let arr = L.build_array_malloc typ size "pixel1" builder in 
+                           let arr = L.build_pointercast arr typ "pixel2" builder in
+                           let rec outerIter lst i  =
+                              match lst with
+                                [] -> arr
+                                | h::t -> let rec innerIter inlst j =
+                                  match inlst with
+                                    [] -> outerIter t j
+                                    | h::t -> let arr_ptr = L.build_gep arr [|L.const_int i64_t 0|] "matrix1" builder in L.build_store (L.const_int i64_t 10) arr_ptr builder in innerIter t j+1
+                                  in innerIter h i
+                            
+                            outerIter li 0 
+
       | A.PixelLit(e1,e2,e3,e4) -> 
       	  let size = L.const_int i64_t 4 in
       	  let typ = L.pointer_type i64_t in
@@ -96,8 +114,8 @@ let translate (globals, functions) =
       	  let arr = L.build_pointercast arr typ "pixel2" builder in
       	  let arr_ptr = L.build_gep arr [|L.const_int i64_t 0|] "pixel3" builder in ignore(L.build_store (L.const_int i64_t e1) arr_ptr builder);
       	  let arr_ptr = L.build_gep arr [|L.const_int i64_t 1|] "pixel4" builder in ignore(L.build_store (L.const_int i64_t e2) arr_ptr builder);
-      	  let arr_ptr = L.build_gep arr [|L.const_int i64_t 2|] "pixel5" builder in ignore(L.build_store (L.const_int i64_t e2) arr_ptr builder);
-      	  let arr_ptr = L.build_gep arr [|L.const_int i64_t 3|] "pixel6" builder in ignore(L.build_store (L.const_int i64_t e2) arr_ptr builder);
+      	  let arr_ptr = L.build_gep arr [|L.const_int i64_t 2|] "pixel5" builder in ignore(L.build_store (L.const_int i64_t e3) arr_ptr builder);
+      	  let arr_ptr = L.build_gep arr [|L.const_int i64_t 3|] "pixel6" builder in ignore(L.build_store (L.const_int i64_t e) arr_ptr builder);
       	  arr
 
 	  | A.Binop (e1, op, e2) ->
