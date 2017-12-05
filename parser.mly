@@ -113,10 +113,10 @@ expr:
   | ID ASSIGN expr                             { Assign($1, $3) }
   | ID LPAREN actuals_opt RPAREN               { Call($1, $3) }
   | LPAREN expr RPAREN                         { $2 }
-  /*| ID ADDASS expr                             { Addass($1, $3) }*/
-  | LBRAC mat_lit RBRAC                        { MatrixLit($2) }
+/*| ID ADDASS expr                             { Addass($1, $3) }*/
+  | LBRAC mat_lit RBRAC                        { MatrixLit(List.rev($2)) }
   | pixel_lit                                  { $1 }
-  | ID LBRAC expr RBRAC                       { Access($1, $3)}
+  | ID LBRAC expr RBRAC                        { Access($1, $3) }
   | ID LANGLE expr COLON expr COMMA expr COLON expr RANGLE { Crop($1, $3, $5, $7, $9) }
 
 actuals_opt:
@@ -128,8 +128,8 @@ actuals_list:
   | actuals_list COMMA expr { $3 :: $1 }
 
 mat_lit:
-    row_lit                        { [$1] }
-  | mat_lit SEMI row_lit         { $3 :: $1 }
+    row_lit                        { [(List.rev $1)] }
+  | mat_lit SEMI row_lit         { $3 :: (List.rev $1) }
 
 row_lit:
     expr                             { [$1] }
