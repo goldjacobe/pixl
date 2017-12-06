@@ -117,6 +117,7 @@ expr:
   | LBRAC mat_lit RBRAC                        { MatrixLit($2) }
   | pixel_lit                                  { $1 }
   | ID LBRAC expr RBRAC                       { Access($1, $3)}
+  | ID LBRAC expr RBRAC LBRAC expr RBRAC      { MatrixAccess($1, $3, $6)}
 
 actuals_opt:
     /* nothing */ { [] }

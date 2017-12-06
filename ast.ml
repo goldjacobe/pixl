@@ -21,7 +21,7 @@ and expr =
   | Call of string * expr list
   | Noexpr
   | Access of string * expr 
-
+  | MatrixAccess of string * expr * expr
 type bind = typ * string
 
 
@@ -71,6 +71,7 @@ let rec string_of_expr = function
   | BoolLit(false) -> "false"
   | MatrixLit(e1) -> "TODO"
   | PixelLit(v1,v2,v3,v4) -> "(" ^ string_of_int v1 ^ "," ^ string_of_int v2 ^ "," ^ string_of_int v3 ^ "," ^ string_of_int v4 ^ ")"
+  | MatrixLit(m) -> "(" ^ "matrix " ^ ")"
   | StringLit(s) -> s
   | Id(s) -> s
   | Binop(e1, o, e2) ->
@@ -80,7 +81,8 @@ let rec string_of_expr = function
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
   | Noexpr -> ""
-  | Access(v, e) -> v ^ "[" ^ string_of_expr e ^ "]" 
+  | Access(v, e) -> v ^ "[" ^ string_of_expr e ^ "]"
+  | MatrixAccess(v, e1, e2) -> v ^ "[" ^ string_of_expr e1 ^ "]" ^ "[" ^ string_of_expr e2 ^ "]"
 
 let rec string_of_stmt = function
     Block(stmts) ->

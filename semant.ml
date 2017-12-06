@@ -40,7 +40,7 @@ let check (globals, functions) =
        | Matrix(rt,re1,re2) -> if rt = lt && re1 = le1 && re2 = le2 then lvaluet else raise err
        | _ -> raise err
      )
-     | _-> if lvaluet == rvaluet then lvaluet else raise err 
+     | _-> if lvaluet == rvaluet then lvaluet else raise err
   in
 
   (**** Checking Global Variables ****)
@@ -111,10 +111,10 @@ let check (globals, functions) =
           | true -> Matrix(expr x, Literal((List.length z) + 1), Literal((List.length y) + 1))
           | false -> raise (Failure ("Matrix has lists of uneven length"))
         )) 
-        
       | Id s -> type_of_identifier s
       | StringLit _ -> String
       | Access(v,e) -> Int
+      | MatrixAccess(v,e1,e2) -> Int
       | Binop(e1, op, e2) as e -> let t1 = expr e1 and t2 = expr e2 in
 	      (match op with
           Add | Sub | Mult | Div when t1 = Int && t2 = Int -> Int

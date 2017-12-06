@@ -30,7 +30,8 @@ let translate (globals, functions) =
     | A.Bool -> i1_t
     | A.Char -> i8_t
     | A.String -> str_t
-    | A.Pixel -> L.pointer_type(L.i64_type context) in
+    | A.Pixel -> L.pointer_type(L.i64_type context) 
+    | A.Matrix(typ,i1,i2) -> L.pointer_type(L.i64_type context) in
 
   (* Declare each global variable; remember its value in a map *)
   let global_vars =
@@ -80,6 +81,7 @@ let translate (globals, functions) =
           (Array.to_list (L.params the_function)) in
       List.fold_left add_local formals fdecl.A.locals in
 
+
     (* Return the value for a variable or formal argument *)
     let lookup n = try StringMap.find n local_vars
                    with Not_found -> StringMap.find n global_vars
@@ -95,7 +97,35 @@ let translate (globals, functions) =
       | A.Access(v,e) -> let arr = L.build_load (lookup v) v builder in
                          let loc = expr builder e in
 			 let pointer = L.build_gep arr [|loc|] "pixel7" builder in 
-                         L.build_load pointer "Access1" builder   
+                         L.build_load pointer "Access1" builder
+      | A.MatrixAccess(v,e1,e2) -> let arr = L.build_load (lookup v) v builder in
+                                   let exp1 = expr builder e1 in
+                                   let exp2 = expr builder e2 in
+                                   let pointer = L.build_gep arr [|L.const_int i64_t 0|] "matrix8" builder in
+                                   L.build_load pointer "Access2" builder
+  
+      | A.MatrixLit(li) -> let rows = List.length li in 
+                           let columns = List.length (List.hd li) in 
+                           let mat = rows * columns in
+                           let size = L.const_int i64_t mat in 
+                           let typ = L.pointer_type i64_t in
+                           let arr = L.build_array_malloc typ size "matrix1" builder in 
+                           let arr = L.build_pointercast arr typ "matrix2" builder in
+                           for r=0 to rows-1 do
+				for c=0 to columns-1 do 
+                                let loc = r * columns + c in
+                                let element = List.nth (List.nth li r) c in
+                                let element = expr builder element in
+                           	let arr_ptr = L.build_gep arr [|L.const_int i64_t loc|] "matrix3" builder in
+				ignore(L.build_store (element) arr_ptr builder); 
+				done
+                           done;
+                           arr
+                                  
+			   
+                           
+
+
       | A.PixelLit(e1,e2,e3,e4) -> 
       	  let size = L.const_int i64_t 4 in
       	  let typ = L.pointer_type i64_t in
