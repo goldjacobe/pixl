@@ -8,7 +8,7 @@ open Ast
 %token PLUS MINUS TIMES DIVIDE ASSIGN NOT
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
 %token RETURN IF ELSE FOR WHILE INT BOOL VOID STRING
-%token LBRAC RBRAC COLON CHAR
+%token LBRAC RBRAC COLON CHAR LANGLE RANGLE
 %token EXP ADDASS PIXEL
 %token <int> LITERAL
 %token <string> ID
@@ -56,11 +56,12 @@ formal_list:
   | formal_list COMMA typ ID { ($3,$4) :: $1 }
 
 typ:
-    INT { Int }
-  | BOOL { Bool }
-  | VOID { Void }
-  | STRING { String }
-  | PIXEL { Pixel }
+    INT                             { Int }
+  | BOOL                            { Bool }
+  | VOID                            { Void }
+  | STRING                          { String }
+  | PIXEL                           { Pixel }
+  | typ LBRAC expr COMMA expr RBRAC { Matrix($1, $3, $5) }
 
 vdecl_list:
     /* nothing */    { [] }
@@ -112,9 +113,11 @@ expr:
   | ID ASSIGN expr                             { Assign($1, $3) }
   | ID LPAREN actuals_opt RPAREN               { Call($1, $3) }
   | LPAREN expr RPAREN                         { $2 }
-  | ID ADDASS expr                             { Addass($1, $3) }
-  | LBRAC mat_lit RBRAC                        { MatrixLit($2) }
+/*| ID ADDASS expr                             { Addass($1, $3) }*/
+  | LBRAC mat_lit RBRAC                        { MatrixLit(List.rev($2)) }
   | pixel_lit                                  { $1 }
+  | ID LBRAC expr RBRAC                        { Access($1, $3) }
+  | ID LANGLE expr COLON expr COMMA expr COLON expr RANGLE { Crop($1, $3, $5, $7, $9) }
 
 actuals_opt:
     /* nothing */ { [] }
@@ -125,18 +128,12 @@ actuals_list:
   | actuals_list COMMA expr { $3 :: $1 }
 
 mat_lit:
-    lit_list                        { [$1] }
-  | mat_lit SEMI lit_list         { $3 :: $1 }
+    row_lit                        { [(List.rev $1)] }
+  | mat_lit SEMI row_lit         { (List.rev $3) :: $1 }
 
-lit_list:
-    lit                             { [$1] }
-  | lit_list COMMA lit            { $3 :: $1 }
-
-lit:
-    LITERAL                         { Literal($1) }
-  | TRUE                            { BoolLit(true) }
-  | FALSE                           { BoolLit(false) }
-  | pixel_lit                       { $1 }
+row_lit:
+    expr                             { [$1] }
+  | row_lit COMMA expr            { $3 :: $1 }
 
 pixel_lit:
     LPAREN LITERAL COMMA LITERAL COMMA LITERAL COMMA LITERAL RPAREN { PixelLit($2, $4, $6, $8) }

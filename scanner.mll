@@ -11,6 +11,8 @@ rule token = parse
 | '}'      { RBRACE }
 | '['      { LBRAC }
 | ']'      { RBRAC }
+| '<'      { LANGLE }
+| '>'      { RANGLE }
 | ';'      { SEMI }
 | ','      { COMMA }
 | '+'      { PLUS }
@@ -41,7 +43,7 @@ rule token = parse
 | '^'      { EXP }
 | '"'      { read_string (Buffer.create 17) lexbuf }
 | "+="     { ADDASS }
-| ":"  { COLON }
+| ":"      { COLON }
 | "char"   { CHAR }
 | "pixel"  { PIXEL }
 | ['0'-'9']+ as lxm { LITERAL(int_of_string lxm) }
