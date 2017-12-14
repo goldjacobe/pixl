@@ -107,7 +107,7 @@ let translate (globals, functions) =
       	  let arr_ptr = L.build_gep arr [|L.const_int i64_t 1|] "pixel4" builder in ignore(L.build_store (L.const_int i64_t e2) arr_ptr builder);
       	  let arr_ptr = L.build_gep arr [|L.const_int i64_t 2|] "pixel5" builder in ignore(L.build_store (L.const_int i64_t e3) arr_ptr builder);
       	  let arr_ptr = L.build_gep arr [|L.const_int i64_t 3|] "pixel6" builder in ignore(L.build_store (L.const_int i64_t e4) arr_ptr builder);
-      	  arr
+      	  
 
 	  | A.Binop (e1, op, e2) ->
           let e1' = expr builder e1

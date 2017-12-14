@@ -25,7 +25,6 @@ and expr =
 
 type bind = typ * string
 
-
 type stmt =
     Block of stmt list
   | Expr of expr
