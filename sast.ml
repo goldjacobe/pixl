@@ -7,7 +7,7 @@ type sexpr =
   | SMatrixLit of sexpr list list * typ
   | SPixelLit of int * int * int * int * typ
   | SId of string * typ
-  | SBinop of expr * op * sexpr * typ
+  | SBinop of sexpr * op * sexpr * typ
   | SUnop of uop * sexpr * typ
   | SAssign of string * sexpr * typ
   | SAddass of string * sexpr * typ

@@ -43,6 +43,23 @@ let check (globals, functions) =
     | _ -> if lvaluet == rvaluet then lvaluet else raise err
   in
 
+  let check_binop e1 op e2 env = 
+  let (se1, env) = expr_to_sexpr e1 env in 
+  let (se2, env) = expr_to_sexpr e2 env in
+  let typ1 = sexpr_to_type se1 in 
+  let typ2 = sexpr_to_type se2 in
+  (match op with
+    Add | Sub | Mult | Div when t1 = Int && t2 = Int -> SBinop(se1,op,se2,Int), env
+    | Equal | Neq when t1 = t2 -> SBinop(se1,op,se2,Bool)
+    | Less | Leq | Greater | Geq when t1 = Int && t2 = Int -> SBinop(se1,op,se2,Int)
+    | And | Or when t1 = Bool && t2 = Bool -> SBinop(se1,op,se2,Bool)
+    | Add when t1 = String && t2 = String -> SBinop(se1,op,se2,String)
+    | Add when t1 = Pixel && t2 = Pixel -> SBinop(se1,op,se2,Pixel)
+    | _ -> raise (Failure ("illegal binary operator " ^
+        string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
+        string_of_typ t2 ^ " in " ^ string_of_expr e))
+  )
+
   (**** Checking Global Variables ****)
 
   List.iter (check_not_void (fun n -> "illegal void global " ^ n)) globals;
@@ -97,24 +114,39 @@ let check (globals, functions) =
       with Not_found -> raise (Failure ("undeclared identifier " ^ s))
     in
 
+    let sexpr_to_type sexpr = match sexpr with  
+        SLiteral(_, typ)                 -> typ
+      | SStringLit(_, typ)               -> typ
+      | SBoolLit(_, typ)                 -> typ
+      | SMatrixLit(_, typ)               -> typ
+      | SPixelLit(_, _, _, _, typ)       -> typ
+      | SBinop(_, _, _, typ)             -> typ
+      | SUnop(_, _, typ)                 -> typ
+      | SId(_, typ)                      -> typ
+      | SAssign(_, _, typ)               -> typ
+      | SAddass(_, _,typ)                -> typ
+      | SCrop(_,_,_,_,_,typ)             -> typ
+      | SNoexpr                          -> Void
+    in
+
     (* Return the type of an expression or throw an exception *)
-    let rec expr = function
-        Literal _ -> Int
-      | BoolLit _ -> Bool
-      | PixelLit _ -> Pixel
+    let rec expr_to_sexpr e env = match e with
+        Literal x -> SLiteral(x, Int), env
+      | BoolLit b -> SBoolLit(b, Bool), env
+      | PixelLit p -> SPixelLit(p, Pixel), env
       | MatrixLit m -> (match m with
-        [] -> Matrix(Int, Literal(0), Literal(1))
-        | [[]] -> Matrix(Int, Literal(1), Literal(0))
+        [] -> SMatrixLit((Int, Literal(0), Literal(1)), Matrix), env)
+        | [[]] -> SMatrixLit((Int, Literal(1), Literal(0)), Matrix), env)
         | (x::y)::z -> let eq = check_if_equal m
           in
         (match eq with
-          | true -> Matrix(expr x, Literal((List.length z) + 1), Literal((List.length y) + 1))
+          | true -> SMatrixLit((Int, Literal(List.length z) + 1, Literal(List.length y) + 1, Matrix), env)
           | false -> raise (Failure ("Matrix has lists of uneven length"))
         ))
       | Id s -> type_of_identifier s
-      | StringLit _ -> String
-      | Access(v,e) -> Int
-      | Binop(e1, op, e2) as e -> let t1 = expr e1 and t2 = expr e2 in
+      | StringLit s -> SStringLit(s, String), env
+      | Access(v,e) -> SLiteral(s, Int), env
+      | Binop(e1, op, e2) as e -> let t1 = sexpr_to_type e1 and t2 = expr_to_sexpr e2 env in
 	      (match op with
           Add | Sub | Mult | Div when t1 = Int && t2 = Int -> Int
 	        | Equal | Neq when t1 = t2 -> Bool
