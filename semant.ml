@@ -34,40 +34,45 @@ let check (globals, functions) =
 
   (* Raise an exception of the given rvalue type cannot be assigned to
      the given lvalue type *)
-  let check_assign lvaluet rvaluet err =
-    match lvaluet with
-    | Matrix(lt,le1,le2) -> (match rvaluet with
-      | Matrix(rt,re1,re2) -> if rt = lt && re1 = le1 && re2 = le2 then lvaluet else raise err
+  let check_assign var e env err =
+    let lvaluet = type_of_identifier var in
+    let (se, env) = expr_to_sexpr e env in
+    let rvaluet = sexpr_to_type se in
+    let _ = (match lvaluet with
+      Matrix(lt,le1,le2) -> (match rvaluet with
+        Matrix(rt,re1,re2) -> if rt = lt && re1 = le1 && re2 = le2 then lvaluet else raise err
       | _ -> raise err
-    )
-    | _ -> if lvaluet == rvaluet then lvaluet else raise err
+      )
+    | _ -> if lvaluet = rvaluet then lvaluet else raise err
+    ) in
+    SAssign(var, se, lvaluet), env
   in
 
-  let check_binop e1 op e2 env = 
-    let (se1, env) = expr_to_sexpr e1 env in 
+  let check_binop e1 op e2 env =
+    let (se1, env) = expr_to_sexpr e1 env in
     let (se2, env) = expr_to_sexpr e2 env in
-    let typ1 = sexpr_to_type se1 in 
+    let typ1 = sexpr_to_type se1 in
     let typ2 = sexpr_to_type se2 in
     (match op with
       Add | Sub | Mult | Div when t1 = Int && t2 = Int -> SBinop(se1,op,se2,Int), env
-      | Equal | Neq when t1 = t2 -> SBinop(se1,op,se2,Bool)
-      | Less | Leq | Greater | Geq when t1 = Int && t2 = Int -> SBinop(se1,op,se2,Int)
-      | And | Or when t1 = Bool && t2 = Bool -> SBinop(se1,op,se2,Bool)
-      | Add when t1 = String && t2 = String -> SBinop(se1,op,se2,String)
-      | Add when t1 = Pixel && t2 = Pixel -> SBinop(se1,op,se2,Pixel)
+      | Equal | Neq when t1 = t2 -> SBinop(se1,op,se2,Bool), env
+      | Less | Leq | Greater | Geq when t1 = Int && t2 = Int -> SBinop(se1,op,se2,Int), env
+      | And | Or when t1 = Bool && t2 = Bool -> SBinop(se1,op,se2,Bool), env
+      | Add when t1 = String && t2 = String -> SBinop(se1,op,se2,String), env
+      | Add when t1 = Pixel && t2 = Pixel -> SBinop(se1,op,se2,Pixel), env
       | _ -> raise (Failure ("illegal binary operator " ^
           string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
           string_of_typ t2 ^ " in " ^ string_of_expr e))
     )
   in
 
-  let check_unop op e env =  
-    let (se, env) = expr_to_sexpr e env in 
-    let typ = sexpr_to_type se in 
-  (match op with
-    Neg when t = Int -> Int
-    | Not when t = Bool -> Bool
-    | _ -> raise (Failure ("illegal unary operator " ^ string_of_uop op ^
+  let check_unop op e env =
+    let (se, env) = expr_to_sexpr e env in
+    let t = sexpr_to_type se in
+    (match op with
+        Neg when t = Int -> SUnop(op, se, Int), env
+      | Not when t = Bool -> SUnop(op, se, Bool), env
+      | _ -> raise (Failure ("illegal unary operator " ^ string_of_uop op ^
           string_of_typ t ^ " in " ^ string_of_expr ex)))
   in
 
@@ -125,7 +130,7 @@ let check (globals, functions) =
       with Not_found -> raise (Failure ("undeclared identifier " ^ s))
     in
 
-    let sexpr_to_type sexpr = match sexpr with  
+    let sexpr_to_type sexpr = match sexpr with
         SLiteral(_, typ)                 -> typ
       | SStringLit(_, typ)               -> typ
       | SBoolLit(_, typ)                 -> typ
@@ -160,11 +165,9 @@ let check (globals, functions) =
       | Binop(e1, op, e2)   -> (check_binop e1 op e2 env)
       | Unop(op, e)         -> (check_unop op e env)
       | Noexpr -> Void
-      | Assign(var, e) as ex -> let lt = type_of_identifier var
-                                and rt = expr e in
-        check_assign lt rt (Failure ("illegal assignment " ^ string_of_typ lt ^
-                                     " = " ^ string_of_typ rt ^ " in " ^
-                                     string_of_expr ex))
+      | Assign(var, e) as ex -> check_assign var e env (Failure (
+        "illegal assignment " ^ string_of_typ lt ^ " = " ^ string_of_typ rt ^
+        " in " ^ string_of_expr ex))
       | Call(fname, actuals) as call -> let fd = function_decl fname in
          if List.length actuals != List.length fd.formals then
            raise (Failure ("expecting " ^ string_of_int
