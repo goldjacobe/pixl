@@ -44,21 +44,32 @@ let check (globals, functions) =
   in
 
   let check_binop e1 op e2 env = 
-  let (se1, env) = expr_to_sexpr e1 env in 
-  let (se2, env) = expr_to_sexpr e2 env in
-  let typ1 = sexpr_to_type se1 in 
-  let typ2 = sexpr_to_type se2 in
+    let (se1, env) = expr_to_sexpr e1 env in 
+    let (se2, env) = expr_to_sexpr e2 env in
+    let typ1 = sexpr_to_type se1 in 
+    let typ2 = sexpr_to_type se2 in
+    (match op with
+      Add | Sub | Mult | Div when t1 = Int && t2 = Int -> SBinop(se1,op,se2,Int), env
+      | Equal | Neq when t1 = t2 -> SBinop(se1,op,se2,Bool)
+      | Less | Leq | Greater | Geq when t1 = Int && t2 = Int -> SBinop(se1,op,se2,Int)
+      | And | Or when t1 = Bool && t2 = Bool -> SBinop(se1,op,se2,Bool)
+      | Add when t1 = String && t2 = String -> SBinop(se1,op,se2,String)
+      | Add when t1 = Pixel && t2 = Pixel -> SBinop(se1,op,se2,Pixel)
+      | _ -> raise (Failure ("illegal binary operator " ^
+          string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
+          string_of_typ t2 ^ " in " ^ string_of_expr e))
+    )
+  in
+
+  let check_unop op e env =  
+    let (se, env) = expr_to_sexpr e env in 
+    let typ = sexpr_to_type se in 
   (match op with
-    Add | Sub | Mult | Div when t1 = Int && t2 = Int -> SBinop(se1,op,se2,Int), env
-    | Equal | Neq when t1 = t2 -> SBinop(se1,op,se2,Bool)
-    | Less | Leq | Greater | Geq when t1 = Int && t2 = Int -> SBinop(se1,op,se2,Int)
-    | And | Or when t1 = Bool && t2 = Bool -> SBinop(se1,op,se2,Bool)
-    | Add when t1 = String && t2 = String -> SBinop(se1,op,se2,String)
-    | Add when t1 = Pixel && t2 = Pixel -> SBinop(se1,op,se2,Pixel)
-    | _ -> raise (Failure ("illegal binary operator " ^
-        string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
-        string_of_typ t2 ^ " in " ^ string_of_expr e))
-  )
+    Neg when t = Int -> Int
+    | Not when t = Bool -> Bool
+    | _ -> raise (Failure ("illegal unary operator " ^ string_of_uop op ^
+          string_of_typ t ^ " in " ^ string_of_expr ex)))
+  in
 
   (**** Checking Global Variables ****)
 
@@ -131,9 +142,9 @@ let check (globals, functions) =
 
     (* Return the type of an expression or throw an exception *)
     let rec expr_to_sexpr e env = match e with
-        Literal x -> SLiteral(x, Int), env
-      | BoolLit b -> SBoolLit(b, Bool), env
-      | PixelLit p -> SPixelLit(p, Pixel), env
+        Literal x           -> SLiteral(x, Int), env
+      | BoolLit b           -> SBoolLit(b, Bool), env
+      | PixelLit p          -> SPixelLit(p, Pixel), env
       | MatrixLit m -> (match m with
         [] -> SMatrixLit((Int, Literal(0), Literal(1)), Matrix), env)
         | [[]] -> SMatrixLit((Int, Literal(1), Literal(0)), Matrix), env)
@@ -144,26 +155,10 @@ let check (globals, functions) =
           | false -> raise (Failure ("Matrix has lists of uneven length"))
         ))
       | Id s -> type_of_identifier s
-      | StringLit s -> SStringLit(s, String), env
-      | Access(v,e) -> SLiteral(s, Int), env
-      | Binop(e1, op, e2) as e -> let t1 = sexpr_to_type e1 and t2 = expr_to_sexpr e2 env in
-	      (match op with
-          Add | Sub | Mult | Div when t1 = Int && t2 = Int -> Int
-	        | Equal | Neq when t1 = t2 -> Bool
-	        | Less | Leq | Greater | Geq when t1 = Int && t2 = Int -> Bool
-          | And | Or when t1 = Bool && t2 = Bool -> Bool
-          | Add when t1 = String && t2 = String -> String
-          | Add when t1 = Pixel && t2 = Pixel -> Pixel
-          | _ -> raise (Failure ("illegal binary operator " ^
-              string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
-              string_of_typ t2 ^ " in " ^ string_of_expr e))
-        )
-      | Unop(op, e) as ex -> let t = expr e in
-        (match op with
-          Neg when t = Int -> Int
-        | Not when t = Bool -> Bool
-        | _ -> raise (Failure ("illegal unary operator " ^ string_of_uop op ^
-                string_of_typ t ^ " in " ^ string_of_expr ex)))
+      | StringLit s         -> SStringLit(s, String), env
+      | Access(v,e)         -> SLiteral(s, Int), env
+      | Binop(e1, op, e2)   -> (check_binop e1 op e2 env)
+      | Unop(op, e)         -> (check_unop op e env)
       | Noexpr -> Void
       | Assign(var, e) as ex -> let lt = type_of_identifier var
                                 and rt = expr e in
