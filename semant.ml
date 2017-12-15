@@ -93,15 +93,7 @@ let check (globals, functions) =
     Literal x           -> SLiteral(x, Int), env
   | BoolLit b           -> SBoolLit(b, Bool), env
   | PixelLit(x1,x2,x3,x4)    -> SPixelLit(x1,x2,x3,x4, Pixel), env
-  (* | MatrixLit m -> (match m with
-    [] -> SMatrixLit((Int, Literal(0), Literal(1)), Matrix), env
-    | [[]] -> SMatrixLit((Int, Literal(1), Literal(0)), Matrix), env
-    | (x::y)::z -> let eq = check_if_equal m
-      in
-    (match eq with
-      | true -> SMatrixLit((Int, Literal(List.length z) + 1, Literal(List.length y) + 1, Matrix), env)
-      | false -> raise (Failure ("Matrix has lists of uneven length"))
-    )) *)
+  | MatrixLit m -> check_matrix m env
   (* | Id s -> type_of_identifier s, env *)
   | StringLit s         -> SStringLit(s, String), env
   (* | Access(v,e)         -> SLiteral(e, Int), env *)
@@ -136,6 +128,31 @@ let check (globals, functions) =
           string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
           string_of_typ t2 ^ " in " ^ string_of_expr e1 ^ string_of_op op ^ string_of_expr e2))
     )
+
+    and check_matrix m env =
+    let add_if_match_1 env l e = 
+      let se, env = expr_to_sexpr e env in
+      match l with
+          []      -> (List.append l [se]), env
+        | hd :: _ ->
+         let t1 = sexpr_to_type hd in
+         let t2 = sexpr_to_type se in
+         if t1 = t2 then (List.append l [se]), env else raise(Failure("MatrixLit types inconsistent"))
+      in
+    let add_if_match_2 env m l =
+      let first_arg f = 
+      let sl, env = List.fold_left (add_if_match_1 env) [] l in
+      match a with
+          []       -> List.append m [sl]
+        | (hd :: _) :: _ ->
+          if List.length m.first != List.length sl
+          then raise(Failure("MatrixLit has lists of uneven length"))
+          else
+          let t1 = sexpr_to_type hd in 
+          let t2 = sexpr_to_type List.first sl in
+        if t1 = t2 then List.append m [sl] else raise(Failure("MatrixLit types inconsistent"))
+      in
+    List.fold_left add_if_match_2 [] m, env
 
     and check_unop op e env =
     let (se, env) = expr_to_sexpr e env in
