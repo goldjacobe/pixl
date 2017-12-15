@@ -21,6 +21,7 @@ let translate (globals, functions) =
   let context = L.global_context () in
   let the_module = L.create_module context "Pixl"
   and i64_t  = L.i64_type  context
+  and i32_t  = L.i32_type  context
   and i8_t   = L.i8_type   context
   and i1_t   = L.i1_type   context
   and str_t  = L.pointer_type (L.i8_type context) in
@@ -30,7 +31,8 @@ let translate (globals, functions) =
     | A.Bool -> i1_t
     | A.Char -> i8_t
     | A.String -> str_t
-    | A.Pixel -> L.pointer_type(L.i64_type context) in
+    | A.Pixel -> L.pointer_type(L.i64_type context) 
+    | A.Matrix(typ,i1,i2) -> L.pointer_type(L.i64_type context) in
 
   (* Declare each global variable; remember its value in a map *)
   let global_vars =
@@ -80,6 +82,7 @@ let translate (globals, functions) =
           (Array.to_list (L.params the_function)) in
       List.fold_left add_local formals fdecl.A.locals in
 
+
     (* Return the value for a variable or formal argument *)
     let lookup n = try StringMap.find n local_vars
                    with Not_found -> StringMap.find n global_vars
@@ -92,10 +95,131 @@ let translate (globals, functions) =
       | A.StringLit s -> L.build_global_stringptr(s^"\x00") "strptr" builder
       | A.Noexpr -> L.const_int i64_t 0
       | A.Id s -> L.build_load (lookup s) s builder
+      (*| A.Crop(m,v1,v2,v3,v4) -> let arr1 = L.build_load (lookup m) m builder in  
+                                let size = L.build_mul (expr builder v2) (expr builder v4) "size1" builder in 
+                                let size = L.build_add size (L.const_int i64_t 2) "size2" builder in 
+                                let typ = L.pointer_type i64_t in 
+                                let arr2 = L.build_array_malloc typ size "crop1" builder in
+                                let arr2 = L.build_pointercast arr2 typ "crop2" builder in
+                                let pointer = L.build_gep arr1 [|L.const_int i64_t 0|] "matrix row" builder in
+                                let rows =  L.build_load pointer "Rows" builder in  
+                                let pointer = L.build_gep arr1 [|L.const_int i64_t 1|] "matrix row2" builder in
+                                let cols =  L.build_load pointer "Column" builder in
+                                let arr_ptr = L.build_gep arr2 [|L.const_int i64_t 0|] "crop3" builder in ignore(L.build_store (rows) arr_ptr builder);
+                                let arr_ptr = L.build_gep arr2 [|L.const_int i64_t 1|] "crop4" builder in ignore(L.build_store (cols) arr_ptr builder); 
+				let count = 2 in
+                                let v2 = expr builder v2 in
+                                let v1 = expr builder v1 in
+				for r=v1 to v2-1 do 
+                                   for c=v3 to v4-1 do 
+                                   let count = count + 1 in
+                                   let left = L.build_mul cols (L.const_int i64_t r) "left" builder in
+                                   let right = L.build_add (L.const_int i64_t c) (L.const_int i64_t 2) "right" builder in
+                                   let loc = L.build_add left right "add" builder in
+                                   let pointer = L.build_gep arr1 [|loc|] "crop5" builder in 
+                                   let element = L.build_load pointer "element" builder in  
+                                   let arr_ptr = L.build_gep arr2 [|L.const_int i64_t count|] "crop6" in
+                                   ignore(L.build_store (element) arr_ptr builder);
+                                   done
+                                done;
+                                arr2*) 
+                                   
+                                      
       | A.Access(v,e) -> let arr = L.build_load (lookup v) v builder in
                          let loc = expr builder e in
 			 let pointer = L.build_gep arr [|loc|] "pixel7" builder in 
-                         L.build_load pointer "Access1" builder   
+                         L.build_load pointer "Access1" builder
+      | A.MatrixAccess(v,e1,e2) -> let arr1 = L.build_load (lookup v) v builder in
+                                   let pointer = L.build_gep arr1 [|L.const_int i64_t 1|] "matrix7" builder in
+                                   let cols = L.build_load pointer "Access2" builder in 
+                                   let exp1 = expr builder e1 in
+                                   let exp2 = expr builder e2 in
+                                   let left = L.build_mul cols exp1 "left" builder in
+                                   let left = L.build_add left exp2 "left2" builder in
+                                   let left = L.build_mul left (L.const_int i64_t 4) "left3" builder in 
+                                   let loc = L.build_add left (L.const_int i64_t 2) "right" builder in
+                                   let size = L.const_int i64_t 4 in
+          			   let typ = L.pointer_type i64_t in
+          			   let arr2 = L.build_array_malloc typ size "pixel1" builder in
+                                   let arr2 = L.build_pointercast arr2 typ "pixel2" builder in
+                                   let pointer1 = L.build_gep arr1 [|loc|] "matrix8" builder in
+                                   let num1 = L.build_load pointer1 "Access3" builder in
+                                   let pointer2 = L.build_gep arr1 [|L.build_add loc (L.const_int i64_t 1) "add1" builder|] "matrix8" builder in
+                                   let num2 = L.build_load pointer2 "Access3" builder in
+                                   let pointer3 = L.build_gep arr1 [|L.build_add loc (L.const_int i64_t 2) "add2" builder|] "matrix8" builder in
+                                   let num3 = L.build_load pointer3 "Access3" builder in
+                                   let pointer4 = L.build_gep arr1 [|L.build_add loc (L.const_int i64_t 3) "add3" builder|] "matrix8" builder in
+                                   let num4 = L.build_load pointer4 "Access3" builder in
+          			   let arr_ptr = L.build_gep arr2 [|L.const_int i64_t 0|] "pixel3" builder in ignore(L.build_store (num1) arr_ptr builder);
+                                   let arr_ptr = L.build_gep arr2 [|L.const_int i64_t 1|] "pixel4" builder in ignore(L.build_store (num2) arr_ptr builder);
+                                   let arr_ptr = L.build_gep arr2 [|L.const_int i64_t 2|] "pixel5" builder in ignore(L.build_store (num3) arr_ptr builder);
+                                   let arr_ptr = L.build_gep arr2 [|L.const_int i64_t 3|] "pixel6" builder in ignore(L.build_store (num4) arr_ptr builder);
+          			   arr2
+
+                                   
+                                  
+                                 (*let arr = L.build_load (lookup v) v builder in
+                                   let pointer = L.build_gep arr [|L.const_int i64_t 1|] "matrix7" builder in
+                                   let cols = L.build_load pointer "Access2" builder in 
+                                   let exp1 = expr builder e1 in
+                                   let exp2 = expr builder e2 in
+                                   let left = L.build_mul cols exp1 "left" builder in
+                                   let right = L.build_add exp2 (L.const_int i64_t 2) "right" builder in
+                                   let loc = L.build_add left right "add" builder in
+                                   let pointer = L.build_gep arr [|loc|] "matrix8" builder in
+                                   L.build_load pointer "Access3" builder*)
+  
+      | A.MatrixLit(li) -> let rows = List.length li in               
+                           let columns = List.length (List.hd li) in 
+                           let mat = 4 * (rows * columns + 2) in
+                           let size = L.const_int i64_t mat in 
+                           let typ = L.pointer_type i64_t in
+                           let arr = L.build_array_malloc typ size "matrix1" builder in 
+                           let arr = L.build_pointercast arr typ "matrix2" builder in
+                           let arr_ptr = L.build_gep arr [|L.const_int i64_t 0|] "pixel3" builder in ignore(L.build_store (L.const_int i64_t rows) arr_ptr builder);
+                           let arr_ptr = L.build_gep arr [|L.const_int i64_t 1|] "pixel3" builder in ignore(L.build_store (L.const_int i64_t (columns)) arr_ptr builder);  
+			   for r=0 to rows-1 do
+                                for c=0 to columns-1 do 
+                                let element = List.nth (List.nth li r) c in
+                                let element = expr builder element in
+                                let loc = (r * columns + c) * 4 + 2 in  
+                                let arr_ptr = L.build_gep element [|L.const_int i64_t 0|] "matrix1" builder in 
+                                let num1 = L.build_load arr_ptr "num1" builder in
+				let arr_ptr = L.build_gep element [|L.const_int i64_t 1|] "matrix2" builder in
+                                let num2 = L.build_load arr_ptr "num2" builder in
+				let arr_ptr = L.build_gep element [|L.const_int i64_t 2|] "matrix3" builder in
+                                let num3 = L.build_load arr_ptr "num3" builder in
+				let arr_ptr = L.build_gep element [|L.const_int i64_t 3|] "matrix4" builder in
+                                let num4 = L.build_load arr_ptr "num4" builder in
+				let arr_ptr = L.build_gep arr [|L.const_int i64_t loc|] "matrix5" builder in ignore(L.build_store (num1) arr_ptr builder);
+                                let arr_ptr = L.build_gep arr [|L.const_int i64_t (loc + 1)|] "matrix6" builder in ignore(L.build_store (num2) arr_ptr builder);
+                                let arr_ptr = L.build_gep arr [|L.const_int i64_t (loc + 2)|] "matrix7" builder in ignore(L.build_store (num3) arr_ptr builder);
+                                let arr_ptr = L.build_gep arr [|L.const_int i64_t (loc + 3)|] "matrix8" builder in ignore(L.build_store (num4) arr_ptr builder);
+                                done
+                           done;
+                           arr
+			(*let head = List.hd (List.hd li) in 
+                           match head with
+                           let rows = List.length li in 
+                           let columns = List.length (List.hd li) in 
+                           let mat = rows * columns + 2 in
+                           let size = L.const_int i64_t mat in 
+                           let typ = L.pointer_type i64_t in
+                           let arr = L.build_array_malloc typ size "matrix1" builder in 
+                           let arr = L.build_pointercast arr typ "matrix2" builder in
+                           let arr_ptr = L.build_gep arr [|L.const_int i64_t 0|] "pixel3" builder in ignore(L.build_store (L.const_int i64_t rows) arr_ptr builder);
+                           let arr_ptr = L.build_gep arr [|L.const_int i64_t 1|] "pixel3" builder in ignore(L.build_store (L.const_int i64_t columns) arr_ptr builder);                            for r=0 to rows-1 do
+				for c=0 to columns-1 do 
+                                let loc = r * columns + c + 2 in
+                                let element = List.nth (List.nth li r) c in
+                                let element = expr builder element in
+                           	let arr_ptr = L.build_gep arr [|L.const_int i64_t loc|] "matrix3" builder in
+				ignore(L.build_store (element) arr_ptr builder); 
+				done
+                           done;
+                           arr*) 
+			   
+                           
       | A.PixelLit(e1,e2,e3,e4) -> 
       	  let size = L.const_int i64_t 4 in
       	  let typ = L.pointer_type i64_t in
