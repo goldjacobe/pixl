@@ -32,7 +32,6 @@ let check (globals, functions) =
     | h1::h2::[] -> List.length h1 = List.length h2
     | h1::h2::tl  -> check_if_equal (h1::[h2]) && check_if_equal (h2::tl)
   in
-  
 
   (**** Checking Global Variables ****)
 
@@ -89,59 +88,59 @@ let check (globals, functions) =
     in
 
     (* Return the type of an expression or throw an exception *)
-    let rec expr_to_sexpr e env = match e with
-    Literal x           -> SLiteral(x, Int), env
-  | BoolLit b           -> SBoolLit(b, Bool), env
-  | PixelLit(x1,x2,x3,x4)    -> SPixelLit(x1,x2,x3,x4, Pixel), env
-  | MatrixLit m -> check_matrix m env
-  (* | Id s -> type_of_identifier s, env *)
-  | StringLit s         -> SStringLit(s, String), env
-  (* | Access(v,e)         -> SLiteral(e, Int), env *)
-  | Binop(e1, op, e2)   -> (check_binop e1 op e2 env)
-  | Unop(op, e)         -> (check_unop op e env)
-  | Noexpr -> SNoexpr, env
-  | Assign(var, e) as ex -> check_assign var e env "Illegal assignment"
-  (* | Call(fname, actuals) as call -> let fd = function_decl fname in
+    let rec expr_to_sexpr e = match e with
+    Literal x           -> SLiteral(x, Int)
+  | BoolLit b           -> SBoolLit(b, Bool)
+  | PixelLit(x1,x2,x3,x4)    -> SPixelLit(x1,x2,x3,x4, Pixel)
+  | MatrixLit m -> check_matrix m
+  | Id s -> type_of_identifier s
+  | StringLit s         -> SStringLit(s, String)
+  | Access(v,e)         -> SLiteral(e, Int)
+  | Binop(e1, op, e2)   -> (check_binop e1 op e2)
+  | Unop(op, e)         -> (check_unop op e)
+  | Noexpr -> SNoexpr
+  | Assign(var, e) as ex -> check_assign var e "Illegal assignment"
+  | Call(fname, actuals) as call -> let fd = function_decl fname in
     if List.length actuals != List.length fd.formals then
       raise (Failure ("expecting " ^ string_of_int
         (List.length fd.formals) ^ " arguments in " ^ string_of_expr call))
     else
       List.iter2 (fun (ft, _) e -> 
-        let exp, _ = expr_to_sexpr e env in
+        let exp, _ = expr_to_sexpr e in
         let et = sexpr_to_type exp in
-            ignore (check_assign ft et env "illegal actual argument found ")) fd.formals actuals
-      SCall(fname, actuals, fd.typ), env *)
+            ignore (check_assign ft et "illegal actual argument found ")) fd.formals actuals
+      SCall(fname, actuals, fd.typ)
 
-  and check_binop e1 op e2 env =
-    let (se1, env) = expr_to_sexpr e1 env in
-    let (se2, env) = expr_to_sexpr e2 env in
+  and check_binop e1 op e2 =
+    let se1 = expr_to_sexpr e1 in
+    let se2 = expr_to_sexpr e2 in
     let t1 = sexpr_to_type se1 in
     let t2 = sexpr_to_type se2 in
     (match op with
-      Add | Sub | Mult | Div when t1 = Int && t2 = Int -> SBinop(se1,op,se2,Int), env
-      | Equal | Neq when t1 = t2 -> SBinop(se1,op,se2,Bool), env
-      | Less | Leq | Greater | Geq when t1 = Int && t2 = Int -> SBinop(se1,op,se2,Int), env
-      | And | Or when t1 = Bool && t2 = Bool -> SBinop(se1,op,se2,Bool), env
-      | Add when t1 = String && t2 = String -> SBinop(se1,op,se2,String), env
-      | Add when t1 = Pixel && t2 = Pixel -> SBinop(se1,op,se2,Pixel), env
+      Add | Sub | Mult | Div when t1 = Int && t2 = Int -> SBinop(se1,op,se2,Int)
+      | Equal | Neq when t1 = t2 -> SBinop(se1,op,se2,Bool)
+      | Less | Leq | Greater | Geq when t1 = Int && t2 = Int -> SBinop(se1,op,se2,Int)
+      | And | Or when t1 = Bool && t2 = Bool -> SBinop(se1,op,se2,Bool)
+      | Add when t1 = String && t2 = String -> SBinop(se1,op,se2,String)
+      | Add when t1 = Pixel && t2 = Pixel -> SBinop(se1,op,se2,Pixel)
       | _ -> raise (Failure ("illegal binary operator " ^
           string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
           string_of_typ t2 ^ " in " ^ string_of_expr e1 ^ string_of_op op ^ string_of_expr e2))
     )
 
-    and check_matrix m env =
-    let add_if_match_1 env l e = 
-      let se, env = expr_to_sexpr e env in
+    and check_matrix m =
+    let add_if_match_1 l e = 
+      let se = expr_to_sexpr e in
       match l with
-          []      -> (List.append l [se]), env
+          []      -> (List.append l [se])
         | hd :: _ ->
          let t1 = sexpr_to_type hd in
          let t2 = sexpr_to_type se in
-         if t1 = t2 then (List.append l [se]), env else raise(Failure("MatrixLit types inconsistent"))
+         if t1 = t2 then (List.append l [se]) else raise(Failure("MatrixLit types inconsistent"))
       in
-    let add_if_match_2 env m l =
+    let add_if_match_2 m l =
       let first_arg f = 
-      let sl, env = List.fold_left (add_if_match_1 env) [] l in
+      let sl = List.fold_left (add_if_match_1) [] l in
       match a with
           []       -> List.append m [sl]
         | (hd :: _) :: _ ->
@@ -152,23 +151,23 @@ let check (globals, functions) =
           let t2 = sexpr_to_type List.first sl in
         if t1 = t2 then List.append m [sl] else raise(Failure("MatrixLit types inconsistent"))
       in
-    List.fold_left add_if_match_2 [] m, env
+    List.fold_left add_if_match_2 [] m
 
-    and check_unop op e env =
-    let (se, env) = expr_to_sexpr e env in
+    and check_unop op e =
+    let se = expr_to_sexpr e in
     let t = sexpr_to_type se in
     (match op with
-        Neg when t = Int -> SUnop(op, se, Int), env
-      | Not when t = Bool -> SUnop(op, se, Bool), env
+        Neg when t = Int -> SUnop(op, se, Int)
+      | Not when t = Bool -> SUnop(op, se, Bool)
       | _ -> raise (Failure ("illegal unary operator " ^ string_of_uop op ^
           string_of_typ t ^ " in " ^ string_of_expr e)))
 
     
       (* Raise an exception of the given rvalue type cannot be assigned to
      the given lvalue type *)
-    and check_assign var e env str =
+    and check_assign var e str =
     let lvaluet = type_of_identifier var in
-    let (se, env) = expr_to_sexpr e env in
+    let se = expr_to_sexpr e in
     let rvaluet = sexpr_to_type se in
     let err = (Failure (
       str ^ string_of_typ lvaluet ^ " = " ^ string_of_typ rvaluet ^
@@ -180,7 +179,7 @@ let check (globals, functions) =
       )
     | _ -> if lvaluet = rvaluet then lvaluet else raise err
     ) in
-    SAssign(var, se, lvaluet), env
+    SAssign(var, se, lvaluet)
 
     and sexpr_to_type sexpr = match sexpr with
       SLiteral(_, typ)                 -> typ
