@@ -22,9 +22,7 @@ type sstmt =
   | SReturn of sexpr
   | SIf of sexpr * sstmt * sstmt
   | SFor of sexpr * sexpr * sexpr * sstmt
-  | SWhile of sexpr * stmt
-  | SEFor of typ * string * string * sstmt
-
+  | SWhile of sexpr * sstmt
 
   (* Pretty-printing functions *)
 
@@ -57,4 +55,19 @@ SBlock(stmts) ->
 | SFor(e1, e2, e3, s) ->
   "for (" ^ string_of_sexpr e1  ^ " ; " ^ string_of_sexpr e2 ^ " ; " ^
   string_of_sexpr e3  ^ ") " ^ string_of_sstmt s
-| SWhile(e, s) -> "while (" ^ string_of_sexpr e ^ ") " ^ string_of_stmt s
+| SWhile(e, s) -> "while (" ^ string_of_sexpr e ^ ") " ^ string_of_sstmt s
+
+(* 
+let sstring_of_vinit (s, e, _) = s ^ " = " ^ string_of_sexpr e ^ ";\n"
+
+let sstring_of_fdecl fdecl =
+  let type_map = List.map fst fdecl.formals
+  string_of_typ fdecl.typ ^ " " ^
+  fdecl.fname ^ "(" ^ String.concat ", " ^ List.map string_of_typ type_map ^ ") {\n" ^ 
+  String.concat "" (List.map string_of_sstmt fdecl.body) ^ "}" ^
+  "}\n Locals:\n" ^ String.concat " " (List.map (fun (f, s) -> "name: " ^ f ^ " type: " ^ sstring_of_typ s ^"\n")  fdecl.slocals) ^    "\nParams:\n" ^ String.concat " " (List.map (fun (f, s) -> "name: " ^ f ^ " type: " ^ sstring_of_typ s ^"\n")  fdecl.sformals)
+
+
+let sstring_of_program (vars, funcs) =
+  String.concat "" (List.map string_of_vinit vars) ^ "\n" ^
+  String.concat "\n" (List.map string_of_fdecl funcs) *)

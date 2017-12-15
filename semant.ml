@@ -201,36 +201,56 @@ let check (globals, functions) =
     | SCrop(_,_,_,_,_,typ)             -> typ
     | SNoexpr                          -> Void
 
-  in
+  and convert_stmt_to_sstmt stmt = match stmt with 
+     Block sl               -> check_block sl
+    | Expr e                -> (check_expr e)
+    | Return e              -> check_return e
+    | If(e, s1, s2)         -> check_bool_expr e s1 s2
+    | While(e, s)           -> check_while e s
+    | For(e1,e2,e3,st)      -> check_for e1 e2 e3 st
 
-  let check_bool_expr e =
+  and check_expr e = 
     let se = expr_to_sexpr e in
     let t = sexpr_to_type se in
+      SExpr(se,t)
+
+  and check_for e1 e2 e3 st = 
+    let se1 = expr_to_sexpr e1 in
+    let se2 = expr_to_sexpr e2 in
+    let se3 = expr_to_sexpr e3 in
+    let sst = convert_stmt_to_sstmt st in
+      SFor(se1, se2, se3, sst)
+  
+  and check_while e s = 
+      let se = expr_to_sexpr e in
+      let sst = convert_stmt_to_sstmt s in
+      SWhile(se,sst)
+
+  and check_block = function
+      [Return _ as s] -> convert_stmt_to_sstmt s
+    | Return _ :: _ -> raise (Failure "nothing may follow a return")
+    | Block sl :: ss -> check_block (sl @ ss)
+    | s :: ss -> convert_stmt_to_sstmt s ; check_block ss
+    | [] -> SBlock([])
+  
+  and check_return e =
+    let t = sexpr_to_type(expr_to_sexpr e) in 
+    if t = func.typ then SReturn(SNoexpr) else
+    raise (Failure ("return gives " ^ string_of_typ t ^ " expected " ^
+                    string_of_typ func.typ ^ " in " ^ string_of_expr e))
+
+  and check_bool_expr e s1 s2 =
+    let se = expr_to_sexpr e in
+    let t = sexpr_to_type se in
+    let ss1 = convert_stmt_to_sstmt s1 in
+    let ss2 = convert_stmt_to_sstmt s2 in
     if t != Bool
       then raise (Failure ("expected Boolean expression in " ^ string_of_expr e))
-    else () in
-
-    (* Verify a statement or throw an exception *)
-    let rec stmt = function
-        Block sl -> let rec check_block = function
-          [Return _ as s] -> stmt s
-        | Return _ :: _ -> raise (Failure "nothing may follow a return")
-        | Block sl :: ss -> check_block (sl @ ss)
-        | s :: ss -> stmt s ; check_block ss
-        | [] -> ()
-        in check_block sl
-      | Expr e -> ignore (expr_to_sexpr e)
-      | Return e -> let t = sexpr_to_type(expr_to_sexpr e) in if t = func.typ then () else
-         raise (Failure ("return gives " ^ string_of_typ t ^ " expected " ^
-                         string_of_typ func.typ ^ " in " ^ string_of_expr e))
-
-      | If(p, b1, b2) -> check_bool_expr p; stmt b1; stmt b2
-      | For(e1, e2, e3, st) -> ignore (expr_to_sexpr e1); check_bool_expr e2;
-                               ignore (expr_to_sexpr e3); stmt st
-      | While(p, s) -> check_bool_expr p; stmt s
+    else SIf(se,ss1,ss2) 
     in
+    (* Verify a statement or throw an exception *)
 
-    stmt (Block func.body)
+    convert_stmt_to_sstmt (Block func.body)
 
   in
   List.iter check_function functions
