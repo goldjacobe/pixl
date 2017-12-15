@@ -250,7 +250,7 @@ let check (globals, functions) =
     in
     (* Verify a statement or throw an exception *)
 
-    convert_stmt_to_sstmt (Block func.body)
+    ignore(convert_stmt_to_sstmt (Block func.body))
 
   in
   List.iter check_function functions
