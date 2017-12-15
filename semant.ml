@@ -105,7 +105,7 @@ let check (globals, functions) =
       raise (Failure ("expecting " ^ string_of_int
         (List.length fd.formals) ^ " arguments in " ^ string_of_expr call))
     else
-      List.iter2 (fun (ft, _) e -> 
+      List.iter2 (fun (ft, _) e ->
         let exp, _ = expr_to_sexpr e in
         let et = sexpr_to_type exp in
             ignore (check_assign ft et "illegal actual argument found ")) fd.formals actuals
@@ -128,8 +128,8 @@ let check (globals, functions) =
           string_of_typ t2 ^ " in " ^ string_of_expr e1 ^ string_of_op op ^ string_of_expr e2))
     )
 
-    and check_matrix m =
-    let add_if_match_1 l e = 
+  and check_matrix m =
+    let add_if_match_1 l e =
       let se = expr_to_sexpr e in
       match l with
           []      -> (List.append l [se])
@@ -139,21 +139,20 @@ let check (globals, functions) =
          if t1 = t2 then (List.append l [se]) else raise(Failure("MatrixLit types inconsistent"))
       in
     let add_if_match_2 m l =
-      let first_arg f = 
-      let sl = List.fold_left (add_if_match_1) [] l in
+      let sl = List.fold_left add_if_match_1 [] l in
       match a with
           []       -> List.append m [sl]
         | (hd :: _) :: _ ->
           if List.length m.first != List.length sl
           then raise(Failure("MatrixLit has lists of uneven length"))
           else
-          let t1 = sexpr_to_type hd in 
+          let t1 = sexpr_to_type hd in
           let t2 = sexpr_to_type List.first sl in
         if t1 = t2 then List.append m [sl] else raise(Failure("MatrixLit types inconsistent"))
       in
     List.fold_left add_if_match_2 [] m
 
-    and check_unop op e =
+  and check_unop op e =
     let se = expr_to_sexpr e in
     let t = sexpr_to_type se in
     (match op with
@@ -162,10 +161,10 @@ let check (globals, functions) =
       | _ -> raise (Failure ("illegal unary operator " ^ string_of_uop op ^
           string_of_typ t ^ " in " ^ string_of_expr e)))
 
-    
+
       (* Raise an exception of the given rvalue type cannot be assigned to
      the given lvalue type *)
-    and check_assign var e str =
+  and check_assign var e str =
     let lvaluet = type_of_identifier var in
     let se = expr_to_sexpr e in
     let rvaluet = sexpr_to_type se in
@@ -181,7 +180,7 @@ let check (globals, functions) =
     ) in
     SAssign(var, se, lvaluet)
 
-    and sexpr_to_type sexpr = match sexpr with
+  and sexpr_to_type sexpr = match sexpr with
       SLiteral(_, typ)                 -> typ
     | SStringLit(_, typ)               -> typ
     | SBoolLit(_, typ)                 -> typ
@@ -197,12 +196,12 @@ let check (globals, functions) =
 
   in
 
-    let check_bool_expr e = 
-      let se = expr_to_sexpr e in
-      let t = sexpr_to_type se in
-      if t != Bool
-        then raise (Failure ("expected Boolean expression in " ^ string_of_expr e))
-      else () in
+  let check_bool_expr e =
+    let se = expr_to_sexpr e in
+    let t = sexpr_to_type se in
+    if t != Bool
+      then raise (Failure ("expected Boolean expression in " ^ string_of_expr e))
+    else () in
 
     (* Verify a statement or throw an exception *)
     let rec stmt = function
