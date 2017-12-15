@@ -92,7 +92,7 @@ let check (globals, functions) =
     Literal x           -> SLiteral(x, Int)
   | BoolLit b           -> SBoolLit(b, Bool)
   | PixelLit(x1,x2,x3,x4)    -> SPixelLit(x1,x2,x3,x4, Pixel)
-  | MatrixLit m -> check_matrix m
+  | MatrixLit m         -> check_matrix m
   | Id s                -> SId(s, type_of_identifier s)
   | StringLit s         -> SStringLit(s, String)
   | Access(v,e)         -> (check_access v e)
@@ -145,17 +145,19 @@ let check (globals, functions) =
       in
     let add_if_match_2 m l =
       let sl = List.fold_left add_if_match_1 [] l in
-      match a with
+      match m with
           []       -> List.append m [sl]
         | (hd :: _) :: _ ->
-          if List.length m.first != List.length sl
+          if (List.length (List.hd m)) != (List.length sl)
           then raise(Failure("MatrixLit has lists of uneven length"))
           else
           let t1 = sexpr_to_type hd in
-          let t2 = sexpr_to_type List.first sl in
+          let t2 = sexpr_to_type (List.hd sl) in
         if t1 = t2 then List.append m [sl] else raise(Failure("MatrixLit types inconsistent"))
       in
-    List.fold_left add_if_match_2 [] m
+    let sm = List.fold_left add_if_match_2 [] m in
+    let t = sexpr_to_type(List.hd(List.hd sm)) in
+    SMatrixLit(sm, t)
 
   and check_unop op e =
     let se = expr_to_sexpr e in
@@ -217,14 +219,14 @@ let check (globals, functions) =
         | s :: ss -> stmt s ; check_block ss
         | [] -> ()
         in check_block sl
-      | Expr e -> ignore (expr e)
-      | Return e -> let t = expr e in if t = func.typ then () else
+      | Expr e -> ignore (expr_to_sexpr e)
+      | Return e -> let t = sexpr_to_type(expr_to_sexpr e) in if t = func.typ then () else
          raise (Failure ("return gives " ^ string_of_typ t ^ " expected " ^
                          string_of_typ func.typ ^ " in " ^ string_of_expr e))
 
       | If(p, b1, b2) -> check_bool_expr p; stmt b1; stmt b2
-      | For(e1, e2, e3, st) -> ignore (expr e1); check_bool_expr e2;
-                               ignore (expr e3); stmt st
+      | For(e1, e2, e3, st) -> ignore (expr_to_sexpr e1); check_bool_expr e2;
+                               ignore (expr_to_sexpr e3); stmt st
       | While(p, s) -> check_bool_expr p; stmt s
     in
 
