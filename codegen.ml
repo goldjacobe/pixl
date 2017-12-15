@@ -21,6 +21,7 @@ let translate (globals, functions) =
   let context = L.global_context () in
   let the_module = L.create_module context "Pixl"
   and i64_t  = L.i64_type  context
+  and i32_t  = L.i32_type  context
   and i8_t   = L.i8_type   context
   and i1_t   = L.i1_type   context
   and str_t  = L.pointer_type (L.i8_type context) in
@@ -41,7 +42,7 @@ let translate (globals, functions) =
     List.fold_left global_var StringMap.empty globals in
 
   (* Declare printf(), which the print built-in function will call *)
-  let printf_t = L.var_arg_function_type i64_t [| L.pointer_type i8_t |] in
+  let printf_t = L.var_arg_function_type i32_t [| L.pointer_type i8_t |] in
   let printf_func = L.declare_function "printf" printf_t the_module in
   
   let printbig_t = L.function_type i64_t [| i64_t |] in
@@ -63,6 +64,7 @@ let translate (globals, functions) =
     let builder = L.builder_at_end context (L.entry_block the_function) in
 
     let int_format_str = L.build_global_stringptr "%d\n" "fmt" builder in
+    let str_format_str = L.build_global_stringptr "%s\n" "fmt" builder in
 
     (* Construct the function's "locals": formal arguments and locally
        declared variables.  Allocate each on the stack, initialize their
@@ -91,7 +93,7 @@ let translate (globals, functions) =
     let rec expr builder = function
         A.Literal i -> L.const_int i64_t i
       | A.BoolLit b -> L.const_int i1_t (if b then 1 else 0)
-      | A.StringLit s -> L.build_global_stringptr(s^"\x00") "strptr" builder
+      | A.StringLit s -> L.build_global_stringptr s "strptr" builder
       | A.Noexpr -> L.const_int i64_t 0
       | A.Id s -> L.build_load (lookup s) s builder
       | A.Access(v,e) -> let arr = L.build_load (lookup v) v builder in
@@ -136,10 +138,14 @@ let translate (globals, functions) =
       	  let typ = L.pointer_type i64_t in
       	  let arr = L.build_array_malloc typ size "pixel1" builder in 
       	  let arr = L.build_pointercast arr typ "pixel2" builder in
-      	  let arr_ptr = L.build_gep arr [|L.const_int i64_t 0|] "pixel3" builder in ignore(L.build_store (L.const_int i64_t e1) arr_ptr builder);
-      	  let arr_ptr = L.build_gep arr [|L.const_int i64_t 1|] "pixel4" builder in ignore(L.build_store (L.const_int i64_t e2) arr_ptr builder);
-      	  let arr_ptr = L.build_gep arr [|L.const_int i64_t 2|] "pixel5" builder in ignore(L.build_store (L.const_int i64_t e3) arr_ptr builder);
-      	  let arr_ptr = L.build_gep arr [|L.const_int i64_t 3|] "pixel6" builder in ignore(L.build_store (L.const_int i64_t e4) arr_ptr builder);
+          let e1 = expr builder e1 in
+          let e2 = expr builder e2 in
+          let e3 = expr builder e3 in
+          let e4 = expr builder e4 in
+      	  let arr_ptr = L.build_gep arr [|L.const_int i64_t 0|] "pixel3" builder in ignore(L.build_store (e1) arr_ptr builder);
+      	  let arr_ptr = L.build_gep arr [|L.const_int i64_t 1|] "pixel4" builder in ignore(L.build_store (e2) arr_ptr builder);
+      	  let arr_ptr = L.build_gep arr [|L.const_int i64_t 2|] "pixel5" builder in ignore(L.build_store (e3) arr_ptr builder);
+      	  let arr_ptr = L.build_gep arr [|L.const_int i64_t 3|] "pixel6" builder in ignore(L.build_store (e4) arr_ptr builder);
       	  arr
 
 	  | A.Binop (e1, op, e2) ->
@@ -168,6 +174,9 @@ let translate (globals, functions) =
                            ignore (L.build_store e' (lookup s) builder); e'
       | A.Call ("print", [e]) | A.Call ("printb", [e]) ->
           L.build_call printf_func [| int_format_str ; (expr builder e) |]
+            "printf" builder
+      | A.Call ("prints", [e]) ->
+          L.build_call printf_func [| str_format_str ; (expr builder e) |]
             "printf" builder
       | A.Call ("printbig", [e]) -> L.build_call printbig_func [| (expr builder e) |] "printbig" builder
       | A.Call (f, act) ->

@@ -136,4 +136,4 @@ row_lit:
   | row_lit COMMA expr            { $3 :: $1 }
 
 pixel_lit:
-    LPAREN LITERAL COMMA LITERAL COMMA LITERAL COMMA LITERAL RPAREN { PixelLit($2, $4, $6, $8) }
+    LPAREN expr COMMA expr COMMA expr COMMA expr RPAREN { PixelLit($2, $4, $6, $8) }

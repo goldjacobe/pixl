@@ -58,9 +58,11 @@ let check (globals, functions) =
     (List.map (fun fd -> fd.fname) functions);
 
   (* Function declaration for a named function *)
-  let built_in_decls =  StringMap.singleton "print"
+  let built_in_decls =  StringMap.add "print"
     { typ = Void; fname = "print"; formals = [(Int, "s")];
-      locals = []; body = [] }
+      locals = []; body = [] } (StringMap.singleton "prints"
+     { typ = Void; fname = "print"; formals = [(String,"s")]; locals = [];
+       body =  []  } ) 
   in
 
   let function_decls = List.fold_left (fun m fd -> StringMap.add fd.fname fd m)
