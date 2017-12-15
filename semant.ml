@@ -1,6 +1,7 @@
 (* Semantic checking for the PIXL compiler *)
 
 open Ast
+open Sast
 
 module StringMap = Map.Make(String)
 
@@ -31,50 +32,7 @@ let check (globals, functions) =
     | h1::h2::[] -> List.length h1 = List.length h2
     | h1::h2::tl  -> check_if_equal (h1::[h2]) && check_if_equal (h2::tl)
   in
-
-  (* Raise an exception of the given rvalue type cannot be assigned to
-     the given lvalue type *)
-  let check_assign var e env err =
-    let lvaluet = type_of_identifier var in
-    let (se, env) = expr_to_sexpr e env in
-    let rvaluet = sexpr_to_type se in
-    let _ = (match lvaluet with
-      Matrix(lt,le1,le2) -> (match rvaluet with
-        Matrix(rt,re1,re2) -> if rt = lt && re1 = le1 && re2 = le2 then lvaluet else raise err
-      | _ -> raise err
-      )
-    | _ -> if lvaluet = rvaluet then lvaluet else raise err
-    ) in
-    SAssign(var, se, lvaluet), env
-  in
-
-  let check_binop e1 op e2 env =
-    let (se1, env) = expr_to_sexpr e1 env in
-    let (se2, env) = expr_to_sexpr e2 env in
-    let typ1 = sexpr_to_type se1 in
-    let typ2 = sexpr_to_type se2 in
-    (match op with
-      Add | Sub | Mult | Div when t1 = Int && t2 = Int -> SBinop(se1,op,se2,Int), env
-      | Equal | Neq when t1 = t2 -> SBinop(se1,op,se2,Bool), env
-      | Less | Leq | Greater | Geq when t1 = Int && t2 = Int -> SBinop(se1,op,se2,Int), env
-      | And | Or when t1 = Bool && t2 = Bool -> SBinop(se1,op,se2,Bool), env
-      | Add when t1 = String && t2 = String -> SBinop(se1,op,se2,String), env
-      | Add when t1 = Pixel && t2 = Pixel -> SBinop(se1,op,se2,Pixel), env
-      | _ -> raise (Failure ("illegal binary operator " ^
-          string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
-          string_of_typ t2 ^ " in " ^ string_of_expr e))
-    )
-  in
-
-  let check_unop op e env =
-    let (se, env) = expr_to_sexpr e env in
-    let t = sexpr_to_type se in
-    (match op with
-        Neg when t = Int -> SUnop(op, se, Int), env
-      | Not when t = Bool -> SUnop(op, se, Bool), env
-      | _ -> raise (Failure ("illegal unary operator " ^ string_of_uop op ^
-          string_of_typ t ^ " in " ^ string_of_expr ex)))
-  in
+  
 
   (**** Checking Global Variables ****)
 
@@ -130,60 +88,105 @@ let check (globals, functions) =
       with Not_found -> raise (Failure ("undeclared identifier " ^ s))
     in
 
-    let sexpr_to_type sexpr = match sexpr with
-        SLiteral(_, typ)                 -> typ
-      | SStringLit(_, typ)               -> typ
-      | SBoolLit(_, typ)                 -> typ
-      | SMatrixLit(_, typ)               -> typ
-      | SPixelLit(_, _, _, _, typ)       -> typ
-      | SBinop(_, _, _, typ)             -> typ
-      | SUnop(_, _, typ)                 -> typ
-      | SId(_, typ)                      -> typ
-      | SAssign(_, _, typ)               -> typ
-      | SAddass(_, _,typ)                -> typ
-      | SCrop(_,_,_,_,_,typ)             -> typ
-      | SNoexpr                          -> Void
-    in
-
     (* Return the type of an expression or throw an exception *)
     let rec expr_to_sexpr e env = match e with
-        Literal x           -> SLiteral(x, Int), env
-      | BoolLit b           -> SBoolLit(b, Bool), env
-      | PixelLit p          -> SPixelLit(p, Pixel), env
-      | MatrixLit m -> (match m with
-        [] -> SMatrixLit((Int, Literal(0), Literal(1)), Matrix), env)
-        | [[]] -> SMatrixLit((Int, Literal(1), Literal(0)), Matrix), env)
-        | (x::y)::z -> let eq = check_if_equal m
-          in
-        (match eq with
-          | true -> SMatrixLit((Int, Literal(List.length z) + 1, Literal(List.length y) + 1, Matrix), env)
-          | false -> raise (Failure ("Matrix has lists of uneven length"))
-        ))
-      | Id s -> type_of_identifier s
-      | StringLit s         -> SStringLit(s, String), env
-      | Access(v,e)         -> SLiteral(s, Int), env
-      | Binop(e1, op, e2)   -> (check_binop e1 op e2 env)
-      | Unop(op, e)         -> (check_unop op e env)
-      | Noexpr -> Void
-      | Assign(var, e) as ex -> check_assign var e env (Failure (
-        "illegal assignment " ^ string_of_typ lt ^ " = " ^ string_of_typ rt ^
-        " in " ^ string_of_expr ex))
-      | Call(fname, actuals) as call -> let fd = function_decl fname in
-         if List.length actuals != List.length fd.formals then
-           raise (Failure ("expecting " ^ string_of_int
-             (List.length fd.formals) ^ " arguments in " ^ string_of_expr call))
-         else
-           List.iter2 (fun (ft, _) e -> let et = expr e in
-              ignore (check_assign ft et
-                (Failure ("illegal actual argument found " ^ string_of_typ et ^
-                " expected " ^ string_of_typ ft ^ " in " ^ string_of_expr e))))
-             fd.formals actuals;
-           fd.typ
-    in
+    Literal x           -> SLiteral(x, Int), env
+  | BoolLit b           -> SBoolLit(b, Bool), env
+  | PixelLit(x1,x2,x3,x4)    -> SPixelLit(x1,x2,x3,x4, Pixel), env
+  (* | MatrixLit m -> (match m with
+    [] -> SMatrixLit((Int, Literal(0), Literal(1)), Matrix), env
+    | [[]] -> SMatrixLit((Int, Literal(1), Literal(0)), Matrix), env
+    | (x::y)::z -> let eq = check_if_equal m
+      in
+    (match eq with
+      | true -> SMatrixLit((Int, Literal(List.length z) + 1, Literal(List.length y) + 1, Matrix), env)
+      | false -> raise (Failure ("Matrix has lists of uneven length"))
+    )) *)
+  (* | Id s -> type_of_identifier s, env *)
+  | StringLit s         -> SStringLit(s, String), env
+  (* | Access(v,e)         -> SLiteral(e, Int), env *)
+  | Binop(e1, op, e2)   -> (check_binop e1 op e2 env)
+  | Unop(op, e)         -> (check_unop op e env)
+  | Noexpr -> SNoexpr, env
+  | Assign(var, e) as ex -> check_assign var e env "Illegal assignment"
+  (* | Call(fname, actuals) as call -> let fd = function_decl fname in
+    if List.length actuals != List.length fd.formals then
+      raise (Failure ("expecting " ^ string_of_int
+        (List.length fd.formals) ^ " arguments in " ^ string_of_expr call))
+    else
+      List.iter2 (fun (ft, _) e -> 
+        let exp, _ = expr_to_sexpr e env in
+        let et = sexpr_to_type exp in
+            ignore (check_assign ft et env "illegal actual argument found ")) fd.formals actuals
+      SCall(fname, actuals, fd.typ), env *)
 
-    let check_bool_expr e = if expr e != Bool
-     then raise (Failure ("expected Boolean expression in " ^ string_of_expr e))
-     else () in
+  and check_binop e1 op e2 env =
+    let (se1, env) = expr_to_sexpr e1 env in
+    let (se2, env) = expr_to_sexpr e2 env in
+    let t1 = sexpr_to_type se1 in
+    let t2 = sexpr_to_type se2 in
+    (match op with
+      Add | Sub | Mult | Div when t1 = Int && t2 = Int -> SBinop(se1,op,se2,Int), env
+      | Equal | Neq when t1 = t2 -> SBinop(se1,op,se2,Bool), env
+      | Less | Leq | Greater | Geq when t1 = Int && t2 = Int -> SBinop(se1,op,se2,Int), env
+      | And | Or when t1 = Bool && t2 = Bool -> SBinop(se1,op,se2,Bool), env
+      | Add when t1 = String && t2 = String -> SBinop(se1,op,se2,String), env
+      | Add when t1 = Pixel && t2 = Pixel -> SBinop(se1,op,se2,Pixel), env
+      | _ -> raise (Failure ("illegal binary operator " ^
+          string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
+          string_of_typ t2 ^ " in " ^ string_of_expr e1 ^ string_of_op op ^ string_of_expr e2))
+    )
+
+    and check_unop op e env =
+    let (se, env) = expr_to_sexpr e env in
+    let t = sexpr_to_type se in
+    (match op with
+        Neg when t = Int -> SUnop(op, se, Int), env
+      | Not when t = Bool -> SUnop(op, se, Bool), env
+      | _ -> raise (Failure ("illegal unary operator " ^ string_of_uop op ^
+          string_of_typ t ^ " in " ^ string_of_expr e)))
+
+    
+      (* Raise an exception of the given rvalue type cannot be assigned to
+     the given lvalue type *)
+    and check_assign var e env str =
+    let lvaluet = type_of_identifier var in
+    let (se, env) = expr_to_sexpr e env in
+    let rvaluet = sexpr_to_type se in
+    let err = (Failure (
+      str ^ string_of_typ lvaluet ^ " = " ^ string_of_typ rvaluet ^
+      " in " ^ string_of_expr e)) in
+    let _ = (match lvaluet with
+      Matrix(lt,le1,le2) -> (match rvaluet with
+        Matrix(rt,re1,re2) -> if rt = lt && re1 = le1 && re2 = le2 then lvaluet else raise err
+      | _ -> raise err
+      )
+    | _ -> if lvaluet = rvaluet then lvaluet else raise err
+    ) in
+    SAssign(var, se, lvaluet), env
+
+    and sexpr_to_type sexpr = match sexpr with
+      SLiteral(_, typ)                 -> typ
+    | SStringLit(_, typ)               -> typ
+    | SBoolLit(_, typ)                 -> typ
+    | SMatrixLit(_, typ)               -> typ
+    | SPixelLit(_, _, _, _, typ)       -> typ
+    | SBinop(_, _, _, typ)             -> typ
+    | SUnop(_, _, typ)                 -> typ
+    | SId(_, typ)                      -> typ
+    | SAssign(_, _, typ)               -> typ
+    | SAddass(_, _,typ)                -> typ
+    | SCrop(_,_,_,_,_,typ)             -> typ
+    | SNoexpr                          -> Void
+
+  in
+
+    let check_bool_expr e = 
+      let se = expr_to_sexpr e in
+      let t = sexpr_to_type se in
+      if t != Bool
+        then raise (Failure ("expected Boolean expression in " ^ string_of_expr e))
+      else () in
 
     (* Verify a statement or throw an exception *)
     let rec stmt = function

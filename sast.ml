@@ -29,33 +29,32 @@ type sstmt =
   (* Pretty-printing functions *)
 
 let rec string_of_sexpr = function
-SLiteral(l) -> string_of_int l
-| SBoolLit(true) -> "true"
-| SBoolLit(false) -> "false"
-| SMatrixLit(e1) -> "TODO"
-| SPixelLit(v1,v2,v3,v4) -> "(" ^ string_of_int v1 ^ "," ^ string_of_int v2 ^ "," ^ string_of_int v3 ^ "," ^ string_of_int v4 ^ ")"
-| SMatrixLit(m) -> "(" ^ "matrix " ^ ")"
-| SStringLit(s) -> s
-| SId(s) -> s
-| SBinop(e1, o, e2) ->
-  string_of_expr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_expr e2
-| SUnop(o, e) -> string_of_uop o ^ string_of_expr e
-| SAssign(v, e) -> v ^ " = " ^ string_of_expr e
-| SCall(f, el) ->
-  f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
-| SAccess(v, e) -> v ^ "[" ^ string_of_expr e ^ "]"
-| SCrop(v, e1, e2, e3, e4) -> v ^ "<" ^ string_of_expr e1 ^ ":" ^ string_of_expr e2 ^ ", " ^ string_of_expr e3 ^ ":" ^ string_of_expr e4 ^ ">"
+SLiteral(l, _) -> string_of_int l
+| SBoolLit(true, _) -> "true"
+| SBoolLit(false, _) -> "false"
+| SMatrixLit(e1, _) -> "TODO"
+| SPixelLit(v1,v2,v3,v4,_) -> "(" ^ string_of_int v1 ^ "," ^ string_of_int v2 ^ "," ^ string_of_int v3 ^ "," ^ string_of_int v4 ^ ")"
+| SMatrixLit(m,_) -> "(" ^ "matrix " ^ ")"
+| SStringLit(s,_) -> s
+| SId(s,_) -> s
+| SBinop(e1, o, e2, _) -> string_of_sexpr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_sexpr e2
+| SUnop(o, e, _) -> string_of_uop o ^ string_of_sexpr e
+| SAssign(v, e, _) -> v ^ " = " ^ string_of_sexpr e
+| SCall(f, el, _) ->
+  f ^ "(" ^ String.concat ", " (List.map string_of_sexpr el) ^ ")"
+| SAccess(v, e, _) -> v ^ "[" ^ string_of_sexpr e ^ "]"
+| SCrop(v, e1, e2, e3, e4, _) -> v ^ "<" ^ string_of_sexpr e1 ^ ":" ^ string_of_sexpr e2 ^ ", " ^ string_of_sexpr e3 ^ ":" ^ string_of_sexpr e4 ^ ">"
 | SNoexpr -> ""
 
 let rec string_of_sstmt = function
 SBlock(stmts) ->
-  "{\n" ^ String.concat "" (List.map string_of_stmt stmts) ^ "}\n"
-| SExpr(expr) -> string_of_expr expr ^ ";\n";
-| SReturn(expr) -> "return " ^ string_of_expr expr ^ ";\n";
-| SIf(e, s, Block([])) -> "if (" ^ string_of_expr e ^ ")\n" ^ string_of_stmt s
-| SIf(e, s1, s2) ->  "if (" ^ string_of_expr e ^ ")\n" ^
-  string_of_stmt s1 ^ "else\n" ^ string_of_stmt s2
+  "{\n" ^ String.concat "" (List.map string_of_sstmt stmts) ^ "}\n"
+| SExpr(expr,_) -> string_of_sexpr expr ^ ";\n";
+| SReturn(expr) -> "return " ^ string_of_sexpr expr ^ ";\n";
+| SIf(e, s, SBlock([])) -> "if (" ^ string_of_sexpr e ^ ")\n" ^ string_of_sstmt s
+| SIf(e, s1, s2) ->  "if (" ^ string_of_sexpr e ^ ")\n" ^
+  string_of_sstmt s1 ^ "else\n" ^ string_of_sstmt s2
 | SFor(e1, e2, e3, s) ->
-  "for (" ^ string_of_expr e1  ^ " ; " ^ string_of_expr e2 ^ " ; " ^
-  string_of_expr e3  ^ ") " ^ string_of_stmt s
-| SWhile(e, s) -> "while (" ^ string_of_expr e ^ ") " ^ string_of_stmt s
+  "for (" ^ string_of_sexpr e1  ^ " ; " ^ string_of_sexpr e2 ^ " ; " ^
+  string_of_sexpr e3  ^ ") " ^ string_of_sstmt s
+| SWhile(e, s) -> "while (" ^ string_of_sexpr e ^ ") " ^ string_of_stmt s
