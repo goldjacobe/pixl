@@ -93,14 +93,14 @@ let check (globals, functions) =
   | BoolLit b           -> SBoolLit(b, Bool)
   | PixelLit(x1,x2,x3,x4)    -> SPixelLit(x1,x2,x3,x4, Pixel)
   | MatrixLit m -> check_matrix m
-  | Id s -> type_of_identifier s
+  | Id s                -> SId(s, type_of_identifier s)
   | StringLit s         -> SStringLit(s, String)
-  | Access(v,e)         -> SLiteral(e, Int)
+  | Access(v,e)         -> (check_access v e)
   | Binop(e1, op, e2)   -> (check_binop e1 op e2)
   | Unop(op, e)         -> (check_unop op e)
   | Noexpr -> SNoexpr
   | Assign(var, e) as ex -> check_assign var e "Illegal assignment"
-  | Call(fname, actuals) as call -> let fd = function_decl fname in
+  (* | Call(fname, actuals) as call -> let fd = function_decl fname in
     if List.length actuals != List.length fd.formals then
       raise (Failure ("expecting " ^ string_of_int
         (List.length fd.formals) ^ " arguments in " ^ string_of_expr call))
@@ -109,7 +109,12 @@ let check (globals, functions) =
         let exp, _ = expr_to_sexpr e in
         let et = sexpr_to_type exp in
             ignore (check_assign ft et "illegal actual argument found ")) fd.formals actuals
-      SCall(fname, actuals, fd.typ)
+      SCall(fname, actuals, fd.typ) *)
+
+  and check_access var exp =
+  let sexpr = expr_to_sexpr exp in
+    if type_of_identifier var != sexpr_to_type sexpr then raise (Failure("Couldn't access - variable and expression are of different types!"))
+    else SAccess(var, sexpr, sexpr_to_type sexpr)
 
   and check_binop e1 op e2 =
     let se1 = expr_to_sexpr e1 in
