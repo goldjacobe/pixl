@@ -28,6 +28,11 @@ let translate (globals, functions) =
   and i1_t   = L.i1_type   context
   and str_t  = L.pointer_type (L.i8_type context) in
 
+  let global_vars = ref (StringMap.empty) in
+  let local_vars = ref (StringMap.empty) in 
+  let funcn = ref (List.hd functions) in
+  let set_lookup = ref (StringMap.empty) in 
+
   let ltype_of_typ = function
       A.Int -> i64_t
     | A.Bool -> i1_t
@@ -215,12 +220,15 @@ let translate (globals, functions) =
       | S.SAssign (s, e, _) -> let e' = expr builder e in
                            ignore (L.build_store e' (lookup s) builder); e'
 
+      | S.SCall (s, el, _) -> 
+      | (* S.SCall takes the form ("string here", [e1; e2] or [e], _ --> look at this after sast done *)
+
 
 
 
     (* Build the code for the given statement; return the builder for
        the statement's successor *)
-    let rec stmt builder = function
+    (* let rec stmt builder = function
         A.Block sl -> List.fold_left stmt builder sl
       | A.Expr e -> ignore (expr builder e); builder
       | A.Return e -> ignore (match fdecl.A.typ with
@@ -259,6 +267,15 @@ let translate (globals, functions) =
       | A.For (e1, e2, e3, body) -> stmt builder
             ( A.Block [A.Expr e1 ; A.While (e2, A.Block [body ; A.Expr e3]) ] )
     in
+      *) 
+
+    let rec stmt builder = function
+      S.SBlock sl -> List.fold_left stmt builder sl 
+      |S.Sexpr (e, _) -> ignore (expr builder e); builder 
+
+      |S.SReturn (e, _) -> ignore (match !funcn.S.STyp with
+          A.Typ(A.Void) -> L.build_ret_void builder
+          | _ -> L.build_ret (expr builder e) builder); builder 
 
     (* Build the code for each statement in the function *)
     let builder = stmt builder (A.Block fdecl.A.body) in
