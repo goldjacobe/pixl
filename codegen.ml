@@ -12,6 +12,7 @@ http://llvm.moe/ocaml/
 
 *)
 
+open Sast
 open Ast
 open Semant
 module L = Llvm
@@ -125,7 +126,6 @@ let translate (globals, functions) =
           | A.Leq     -> L.build_icmp L.Icmp.Sle
           | A.Greater -> L.build_icmp L.Icmp.Sgt
           | A.Geq     -> L.build_icmp L.Icmp.Sge
-          | A.Addass  -> L.build_add L.Icmp eq
           ) e1' e2' "tmp" builder
       | A.Unop(op, e) ->
           let e' = expr builder e in
@@ -152,6 +152,71 @@ let translate (globals, functions) =
       match L.block_terminator (L.insertion_block builder) with
         Some _ -> ()
       | None -> ignore (f builder) in
+
+    (* Sast stmt builder and return the builder for each of the statement's successor *)
+    let rec expr builder = function
+      S.SLiteral (i, _) -> L.const_int i64_t i
+      | S.SBoolLit b -> L.const_int i1_t (if b then 1 else 0)
+      | S.SStringLit s -> L.build_global_stringptr(s^"\x00") "strptr" builder
+      | S.SNoexpr -> L.const_int i64_t 0
+      | S.SId s -> L.build_load (lookup s) s builder
+
+      | S.SPixelLit(e1, e2, e3, e4, _) -> 
+          let size = L.const_int i64_t 4 in
+          let typ = L.pointer_type i64_t in
+          let arr = L.build_array_malloc typ size "pixel1" builder in 
+          let arr = L.build_pointercast arr typ "pixel2" builder in
+          let arr_ptr = L.build_gep arr [|L.const_int i64_t 0|] "pixel3" builder in ignore(L.build_store (L.const_int i64_t e1) arr_ptr builder);
+          let arr_ptr = L.build_gep arr [|L.const_int i64_t 1|] "pixel4" builder in ignore(L.build_store (L.const_int i64_t e2) arr_ptr builder);
+          let arr_ptr = L.build_gep arr [|L.const_int i64_t 2|] "pixel5" builder in ignore(L.build_store (L.const_int i64_t e3) arr_ptr builder);
+          let arr_ptr = L.build_gep arr [|L.const_int i64_t 3|] "pixel6" builder in ignore(L.build_store (L.const_int i64_t e4) arr_ptr builder);
+      
+      | S.SMatrixLit(ell, _) -> 
+
+      | S.SCrop (s, e1, e2, e3, e4, _) -> 
+      
+      | S.SAccess (s, e, t) ->
+          let index = expr builder e in
+          let index = L.build_add index (L.const_int i32_t 1) "access1" builder in
+          let struct_ptr = expr builder (S.SId(s, t)) in
+          let arr = L.build_load (L.build_struct_gep struct_ptr 0 "access2" builder) "idl" builder in 
+          let res = L.build_gep arr [| index |] "access3" builder in
+          L.build_load res "access4" builder
+
+      | S.SBinop (e1, op, e2, _) ->
+          let e1' = expr builder e1
+          and e2' = expr builder e2 in
+            let typ = Semant.sexpr_to_type e1 in 
+            (match typ with 
+                A.Datatype(A.Int) |  A.Datatype(A.Bool) ->  (match op with
+              A.Add     ->   L.build_add
+              | A.Sub     -> L.build_sub
+              | A.Mult    -> L.build_mul
+              | A.Div     -> L.build_sdiv
+              | A.And     -> L.build_and
+              | A.Or      -> L.build_or
+              | A.Equal   -> L.build_icmp L.Icmp.Eq
+              | A.Neq     -> L.build_icmp L.Icmp.Ne
+              | A.Less    -> L.build_icmp L.Icmp.Slt
+              | A.Leq     -> L.build_icmp L.Icmp.Sle
+              | A.Greater -> L.build_icmp L.Icmp.Sgt
+              | A.Geq     -> L.build_icmp L.Icmp.Sge
+              ) e1' e2' "tmp" builder
+              
+      | S.SUnop(op, e, _) ->
+          let e' = expr builder e in
+          (match op with
+            A.Neg       -> L.build_neg e' "tmp" builder
+            | A.Not     -> L.build_not e' "tmp" builder
+            (*| A.Card    -> 
+                        let struct_ptr = expr builder e in
+                        L.build_load (L.build_struct_gep struct_ptr 1 "struct1" builder) "idl" builder) *)
+      
+      | S.SAssign (s, e, _) -> let e' = expr builder e in
+                           ignore (L.build_store e' (lookup s) builder); e'
+
+
+
 
     (* Build the code for the given statement; return the builder for
        the statement's successor *)
