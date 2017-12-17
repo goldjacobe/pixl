@@ -17,6 +17,8 @@ type sexpr =
   | SMatrixAccess of string * sexpr * sexpr * typ
   | SCrop of string * sexpr * sexpr * sexpr * sexpr * typ
   | SNoexpr
+  | SRows of string
+  | SCols of string
 
 type sstmt =
     SBlock of sstmt list

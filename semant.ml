@@ -60,6 +60,8 @@ let check_function globals fdecls func =
     | Crop(var,r0,r1,c0,c1)   -> (check_crop var r0 r1 c0 c1)
     | Call(fname, actuals)    -> (check_call fname actuals)
     | MatrixAccess(var,e1,e2) -> (check_matrix_access e var e1 e2)
+    | Rows(var)               -> SRows(var)
+    | Cols(var)               -> SCols(var)
   )
 
   and check_matrix_access m var e1 e2 =
@@ -256,6 +258,8 @@ let check_function globals fdecls func =
     | SCall(_,_,typ)                   -> typ
     | SAccess(_,_,typ)                 -> typ
     | SMatrixAccess(_,_,_,typ)         -> typ
+    | SRows(_)                         -> Int
+    | SCols(_)                         -> Int
     | SNoexpr                          -> Void
 
   in
