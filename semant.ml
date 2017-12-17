@@ -39,7 +39,6 @@ let check_function globals fdecls func =
     with Not_found -> raise (Failure ("undeclared identifier " ^ s))
   in
 
-
   let function_decl s = try StringMap.find s fdecls
        with Not_found -> raise (Failure ("unrecognized function " ^ s))
   in
@@ -99,7 +98,6 @@ let check_function globals fdecls func =
           string_of_typ t2 ^ " in " ^ string_of_expr e1 ^ string_of_op op ^ string_of_expr e2))
     )
 
-
   and check_matrix m =
     let add_if_match_1 l e =
       let se = expr_to_sexpr e in
@@ -137,7 +135,7 @@ let check_function globals fdecls func =
       | Not when t = Bool -> SUnop(op, se, Bool)
       | _ -> raise (Failure ("illegal unary operator " ^ string_of_uop op ^
           string_of_typ t ^ " in " ^ string_of_expr e)))
-
+          
   and check_assign var e =
     let lvaluet = type_of_identifier var in
     let se = expr_to_sexpr e in
@@ -257,6 +255,4 @@ let check (globals, functions) =
   with Not_found -> raise(Failure("no main function")) in
   let sfunctions = List.map (check_function globals fdecls) functions in
   (globals, sfunctions)
-
-
 
