@@ -54,6 +54,22 @@ let translate (globals, functions) =
   let printbig_t = L.function_type i64_t [| i64_t |] in
   let printbig_func = L.declare_function "printbig" printbig_t the_module in
 
+  (* declare read, which the read built-in function will call *)
+  let read_t = L.var_arg_function_type str_t [| i32_t |] in 
+  let read_func = L.declare_function "read_sc" read_t the_module in 
+
+  let open_t =  L.var_arg_function_type i32_t [| str_t; str_t |] in 
+  let open_func = L.declare_function "open_sc" open_t the_module in 
+
+  (* writing int *)
+  let write_int_t =  L.var_arg_function_type i32_t [| i32_t; i32_t |] in 
+  let write_int_func = L.declare_function "writei_sc" writei_t the_module in 
+  
+  (* writing strig *)
+  let write_str_t =  L.var_arg_function_type i32_t [| i32_t; str_t |] in 
+  let write_str_func = L.declare_function "writes_sc" writes_t the_module in 
+
+
   (* Define each function (arguments and return type) so we can call it *)
   let function_decls =
     let function_decl m fdecl =
@@ -193,7 +209,7 @@ let translate (globals, functions) =
           and e2' = expr builder e2 in
             let typ = Semant.sexpr_to_type e1 in 
             (match typ with 
-                A.Datatype(A.Int) |  A.Datatype(A.Bool) ->  (match op with
+                A.typ(A.Int) |  A.typ(A.Bool) ->  (match op with
               A.Add     ->   L.build_add
               | A.Sub     -> L.build_sub
               | A.Mult    -> L.build_mul
@@ -221,7 +237,31 @@ let translate (globals, functions) =
                            ignore (L.build_store e' (lookup s) builder); e'
 
       | S.SCall (s, el, _) -> 
-      | (* S.SCall takes the form ("string here", [e1; e2] or [e], _ --> look at this after sast done *)
+      | (* S.SCall takes the form ("string here", [e1; e2] or [e], _ --> look at this after sast done for
+           other possible function calls *)
+
+      | S.SCall("open", [e1; e2], _) ->
+                L.build_call open_func [| expr builder e1; expr builder e2 |] "open" builder
+      | S.SCall("read", [e1], _) ->
+                L.build_call read_func [| expr builder e1|] "read" builder
+      | S.SCall("write", [e1; e2], _) ->
+                let typ = Semant.sexpr_to_type e2 in
+                (match typ with 
+                A.typ(A.String) -> L.build_call write_str_func [|expr builder e1; expr builder e2 |] "write" builder
+                |A.typ(A.Int) -> L.build_call write_int_func [|expr builder e1; expr builder e2 |] "write" builder
+                
+      | S.SCall("close", [e], _) ->
+                L.build_call close_func [|expr builder e|] "close" builder
+
+      | S.SCall (f, act, _ ) ->
+            let (fdef, fdecl) = StringMap.find f function_decls in
+          let actuals = List.rev (List.map (expr builder) (List.rev act)) in
+          let result = (match fdecl.S.styp with 
+                                 A.typ(A.Void) -> ""
+                                 | _ -> f ^ "_result") in
+            L.build_call fdef (Array.of_list actuals) result builder
+
+      in
 
 
 
