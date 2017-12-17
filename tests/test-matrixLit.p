@@ -1,4 +1,7 @@
 int main() {
-	[1,3;4,6];
-	print(0);
+	int matrix m;
+        int matrix p;
+        int a;
+        m = [1,3;4,6];
+        p = m;
 }
