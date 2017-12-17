@@ -347,7 +347,8 @@ let translate (globals, functions) =
           				  let arr_ptr = L.build_gep arr [|L.const_int i64_t 3|] "pixel6" builder in ignore(L.build_store (e4) arr_ptr builder);
           				  arr
 
-      | S.SMatrixLit(li, typ) -> let rows = List.length li in               
+      | S.SMatrixLit(li, typ) -> (match typ with
+                           A.Matrix(A.Pixel) -> let rows = List.length li in               
                            let columns = List.length (List.hd li) in 
                            let mat = 4 * (rows * columns + 2) in
                            let size = L.const_int i64_t mat in 
@@ -376,8 +377,7 @@ let translate (globals, functions) =
                                 done
                            done;
                            arr
-                           (*
-                           let rows = List.length li in
+                          | A.Matrix(A.Int) -> let rows = List.length li in
                            let columns = List.length (List.hd li) in
                            let mat = rows * columns + 2 in
                            let size = L.const_int i64_t mat in
@@ -394,7 +394,7 @@ let translate (globals, functions) =
                                 ignore(L.build_store (element) arr_ptr builder);
                                 done
                            done;
-                           arr *)
+                           arr)
 
 
       | S.SMatrixAccess(v,e1,e2,typ) -> let arr1 = L.build_load (lookup v) v builder in
