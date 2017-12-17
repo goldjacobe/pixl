@@ -12,11 +12,10 @@ http://llvm.moe/ocaml/
 
 *)
 
-open Sast
-open Ast
-open Semant
+module Semant = Semant
 module L = Llvm
 module A = Ast
+module S = Sast
 
 module StringMap = Map.Make(String)
 
@@ -55,28 +54,28 @@ let translate (globals, functions) =
   let printbig_func = L.declare_function "printbig" printbig_t the_module in
 
   (* declare read, which the read built-in function will call *)
-  let read_t = L.var_arg_function_type str_t [| i32_t |] in 
-  let read_func = L.declare_function "read_sc" read_t the_module in 
+  (*let read_t = L.var_arg_function_type str_t [| i32_t |] in 
+  let read_func = L.declare_function "read_sc" read_t the_module in *)
 
-  let open_t =  L.var_arg_function_type i32_t [| str_t; str_t |] in 
-  let open_func = L.declare_function "open_sc" open_t the_module in 
+  (* let open_t =  L.var_arg_function_type i32_t [| str_t; str_t |] in 
+  let open_func = L.declare_function "open_sc" open_t the_module in *)
 
   (* writing int *)
-  let write_int_t =  L.var_arg_function_type i32_t [| i32_t; i32_t |] in 
+  (*let write_int_t =  L.var_arg_function_type i32_t [| i32_t; i32_t |] in 
   let write_int_func = L.declare_function "writei_sc" writei_t the_module in 
   
   (* writing strig *)
   let write_str_t =  L.var_arg_function_type i32_t [| i32_t; str_t |] in 
-  let write_str_func = L.declare_function "writes_sc" writes_t the_module in 
+  let write_str_func = L.declare_function "writes_sc" writes_t the_module in *)
 
 
   (* Define each function (arguments and return type) so we can call it *)
   let function_decls =
     let function_decl m fdecl =
-      let name = fdecl.A.fname
+      let name = fdecl.S.sfname
       and formal_types =
-        Array.of_list (List.map (fun (t,_) -> ltype_of_typ t) fdecl.A.formals)
-      in let ftype = L.function_type (ltype_of_typ fdecl.A.typ) formal_types in
+        Array.of_list (List.map (fun (t,_) -> ltype_of_typ t) fdecl.S.sformals)
+      in let ftype = L.function_type (ltype_of_typ fdecl.S.styp) formal_types in
       StringMap.add name (L.define_function name ftype the_module, fdecl) m in
     List.fold_left function_decl StringMap.empty functions in
 
@@ -179,10 +178,10 @@ let translate (globals, functions) =
     (* Sast stmt builder and return the builder for each of the statement's successor *)
     let rec expr builder = function
       S.SLiteral (i, _) -> L.const_int i64_t i
-      | S.SBoolLit b -> L.const_int i1_t (if b then 1 else 0)
-      | S.SStringLit s -> L.build_global_stringptr(s^"\x00") "strptr" builder
+      | S.SBoolLit (b, _) -> L.const_int i1_t (if b then 1 else 0)
+      | S.SStringLit (s, _) -> L.build_global_stringptr(s^"\x00") "strptr" builder
       | S.SNoexpr -> L.const_int i64_t 0
-      | S.SId s -> L.build_load (lookup s) s builder
+      | S.SId (s, _) -> L.build_load (lookup s) s builder
 
       | S.SPixelLit(e1, e2, e3, e4, _) -> 
           let size = L.const_int i64_t 4 in
@@ -193,7 +192,7 @@ let translate (globals, functions) =
           let arr_ptr = L.build_gep arr [|L.const_int i64_t 1|] "pixel4" builder in ignore(L.build_store (L.const_int i64_t e2) arr_ptr builder);
           let arr_ptr = L.build_gep arr [|L.const_int i64_t 2|] "pixel5" builder in ignore(L.build_store (L.const_int i64_t e3) arr_ptr builder);
           let arr_ptr = L.build_gep arr [|L.const_int i64_t 3|] "pixel6" builder in ignore(L.build_store (L.const_int i64_t e4) arr_ptr builder);
-      
+          arr
       (* | S.SMatrixLit(ell, _) ->  *)
 
       (*| S.SCrop(s, e1, e2, e3, e4, _) -> *)
@@ -201,7 +200,7 @@ let translate (globals, functions) =
       
       | S.SAccess(s, e, t) ->
           let index = expr builder e in
-          let index = L.build_add index (L.const_int i32_t 1) "access1" builder in
+          let index = L.build_add index (L.const_int i64_t 1) "access1" builder in
           let struct_ptr = expr builder (S.SId(s, t)) in
           let arr = L.build_load (L.build_struct_gep struct_ptr 0 "access2" builder) "idl" builder in 
           let res = L.build_gep arr [| index |] "access3" builder in
@@ -210,9 +209,6 @@ let translate (globals, functions) =
       | S.SBinop(e1, op, e2, _) ->
           let e1' = expr builder e1
           and e2' = expr builder e2 in
-            let typ = Semant.sexpr_to_type e1 in 
-            (match typ with 
-                A.Int | A.BoolLit ->  
               (match op with  
                A.Add     ->   L.build_add
               | A.Sub     -> L.build_sub
@@ -226,7 +222,7 @@ let translate (globals, functions) =
               | A.Leq     -> L.build_icmp L.Icmp.Sle
               | A.Greater -> L.build_icmp L.Icmp.Sgt
               | A.Geq     -> L.build_icmp L.Icmp.Sge
-              ) e1' e2' "tmp" builder)
+              ) e1' e2' "tmp" builder
           
       | S.SUnop(op, e, _) ->
           let e' = expr builder e in
@@ -259,7 +255,7 @@ let translate (globals, functions) =
       | S.SCall(f, act, _) ->
           let (fdef, fdecl) = StringMap.find f function_decls in
           let actuals = List.rev (List.map (expr builder) (List.rev act)) in
-          let result = (match fdecl.A.typ with 
+          let result = (match fdecl.S.styp with 
                                  A.Void -> ""
                                  | _ -> f ^ "_result") in
             L.build_call fdef (Array.of_list actuals) result builder
@@ -315,15 +311,15 @@ let translate (globals, functions) =
 
     let rec stmt builder = function
       S.SBlock sl -> List.fold_left stmt builder sl 
-      |S.Sexpr (e, _) -> ignore (expr builder e); builder 
+      |S.SExpr (e, _) -> ignore (expr builder e); builder 
 
-      |S.SReturn (e, _) -> ignore (match !funcn.A.typ with
+      |S.SReturn (e) -> ignore (match !funcn.S.styp with
           A.Void -> L.build_ret_void builder
           | _ -> L.build_ret (expr builder e) builder); builder 
 
     in
     (* Build the code for each statement in the function *)
-    let builder = stmt builder (A.Block fdecl.A.body) in
+    let builder = stmt builder (S.SBlock fdecl.A.body) in
 
     (* Add a return if the last block falls off the end *)
     add_terminal builder (match fdecl.A.typ with
