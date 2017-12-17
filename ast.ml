@@ -30,7 +30,6 @@ and expr =
 
 type bind = typ * string
 
-
 type stmt =
     Block of stmt list
   | Expr of expr
@@ -38,7 +37,6 @@ type stmt =
   | If of expr * stmt * stmt
   | For of expr * expr * expr * stmt
   | While of expr * stmt
-  | EFor of typ * string * string * stmt
 
 type func_decl = {
     typ : typ;
