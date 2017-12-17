@@ -2,3 +2,4 @@
 _build/*
 pixl.native
 *~
+.testall.log

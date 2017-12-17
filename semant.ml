@@ -87,7 +87,7 @@ let check_function globals fdecls func =
     let sactuals = helper (formals, actuals) in
     SCall(fname, sactuals, fd.typ)
 
-  and check_access var uop = 
+  and check_access var uop =
     SAccess(var,uop,Int)
 
   and check_binop e1 op e2 =
@@ -134,7 +134,8 @@ let check_function globals fdecls func =
       in
     let sm = List.fold_left add_if_match_2 [] m in
     let t = sexpr_to_type(List.hd(List.hd sm)) in
-    SMatrixLit(sm, t)
+    if t != Int && t != Pixel then raise(Failure("MatrixLit must be of type Int or Pixel"))
+    else SMatrixLit(sm, Matrix(t))
 
   and check_unop op e =
     let se = expr_to_sexpr e in
@@ -144,7 +145,7 @@ let check_function globals fdecls func =
       | Not when t = Bool -> SUnop(op, se, Bool)
       | _ -> raise (Failure ("illegal unary operator " ^ string_of_uop op ^
           string_of_typ t ^ " in " ^ string_of_expr e)))
-          
+
   and check_assign var e =
     let lvaluet = type_of_identifier var in
     let se = expr_to_sexpr e in
@@ -207,8 +208,8 @@ let check_function globals fdecls func =
     else raise (Failure ("expected Boolean expression in " ^ string_of_expr e))
 
   and convert_lib_fdecl_to_sfdecl =
-   
-    (* Library functions *) 
+
+    (* Library functions *)
     let built_in_decls =
         (StringMap.add "printA" [Int]) in built_in_decls
 
