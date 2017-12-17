@@ -12,8 +12,10 @@ http://llvm.moe/ocaml/
 
 *)
 
+module Semant = Semant
 module L = Llvm
 module A = Ast
+module S = Sast
 
 module StringMap = Map.Make(String)
 
@@ -25,6 +27,11 @@ let translate (globals, functions) =
   and i8_t   = L.i8_type   context
   and i1_t   = L.i1_type   context
   and str_t  = L.pointer_type (L.i8_type context) in
+
+  let global_vars = ref (StringMap.empty) in
+  let local_vars = ref (StringMap.empty) in
+  let funcn = ref (List.hd functions) in
+  let set_lookup = ref (StringMap.empty) in
 
   let ltype_of_typ = function
       A.Int -> i64_t
@@ -44,23 +51,39 @@ let translate (globals, functions) =
   (* Declare printf(), which the print built-in function will call *)
   let printf_t = L.var_arg_function_type i64_t [| L.pointer_type i8_t |] in
   let printf_func = L.declare_function "printf" printf_t the_module in
-  
+
   let printbig_t = L.function_type i64_t [| i64_t |] in
   let printbig_func = L.declare_function "printbig" printbig_t the_module in
+
+  (* declare read, which the read built-in function will call *)
+  (*let read_t = L.var_arg_function_type str_t [| i32_t |] in
+  let read_func = L.declare_function "read_sc" read_t the_module in *)
+
+  (* let open_t =  L.var_arg_function_type i32_t [| str_t; str_t |] in
+  let open_func = L.declare_function "open_sc" open_t the_module in *)
+
+  (* writing int *)
+  (*let write_int_t =  L.var_arg_function_type i32_t [| i32_t; i32_t |] in
+  let write_int_func = L.declare_function "writei_sc" writei_t the_module in
+
+  (* writing strig *)
+  let write_str_t =  L.var_arg_function_type i32_t [| i32_t; str_t |] in
+  let write_str_func = L.declare_function "writes_sc" writes_t the_module in *)
+
 
   (* Define each function (arguments and return type) so we can call it *)
   let function_decls =
     let function_decl m fdecl =
-      let name = fdecl.A.fname
+      let name = fdecl.S.sfname
       and formal_types =
-        Array.of_list (List.map (fun (t,_) -> ltype_of_typ t) fdecl.A.formals)
-      in let ftype = L.function_type (ltype_of_typ fdecl.A.typ) formal_types in
+        Array.of_list (List.map (fun (t,_) -> ltype_of_typ t) fdecl.S.sformals)
+      in let ftype = L.function_type (ltype_of_typ fdecl.S.styp) formal_types in
       StringMap.add name (L.define_function name ftype the_module, fdecl) m in
     List.fold_left function_decl StringMap.empty functions in
 
   (* Fill in the body of the given function *)
   let build_function_body fdecl =
-    let (the_function, _) = StringMap.find fdecl.A.fname function_decls in
+    let (the_function, _) = StringMap.find fdecl.S.sfname function_decls in
     let builder = L.builder_at_end context (L.entry_block the_function) in
 
     let int_format_str = L.build_global_stringptr "%d\n" "fmt" builder in
@@ -78,9 +101,9 @@ let translate (globals, functions) =
         let local_var = L.build_alloca (ltype_of_typ t) n builder
         in StringMap.add n local_var m in
 
-      let formals = List.fold_left2 add_formal StringMap.empty fdecl.A.formals
+      let formals = List.fold_left2 add_formal StringMap.empty fdecl.S.sformals
           (Array.to_list (L.params the_function)) in
-      List.fold_left add_local formals fdecl.A.locals in
+      List.fold_left add_local formals fdecl.S.slocals in
 
 
     (* Return the value for a variable or formal argument *)
@@ -88,6 +111,7 @@ let translate (globals, functions) =
                    with Not_found -> StringMap.find n global_vars
     in
 
+    (*
     (* Construct code for an expression; return its value *)
     let rec expr builder = function
         A.Literal i -> L.const_int i64_t i
@@ -223,13 +247,13 @@ let translate (globals, functions) =
       | A.PixelLit(e1,e2,e3,e4) -> 
       	  let size = L.const_int i64_t 4 in
       	  let typ = L.pointer_type i64_t in
-      	  let arr = L.build_array_malloc typ size "pixel1" builder in 
+      	  let arr = L.build_array_malloc typ size "pixel1" builder in
       	  let arr = L.build_pointercast arr typ "pixel2" builder in
       	  let arr_ptr = L.build_gep arr [|L.const_int i64_t 0|] "pixel3" builder in ignore(L.build_store (L.const_int i64_t e1) arr_ptr builder);
       	  let arr_ptr = L.build_gep arr [|L.const_int i64_t 1|] "pixel4" builder in ignore(L.build_store (L.const_int i64_t e2) arr_ptr builder);
       	  let arr_ptr = L.build_gep arr [|L.const_int i64_t 2|] "pixel5" builder in ignore(L.build_store (L.const_int i64_t e3) arr_ptr builder);
       	  let arr_ptr = L.build_gep arr [|L.const_int i64_t 3|] "pixel6" builder in ignore(L.build_store (L.const_int i64_t e4) arr_ptr builder);
-      	  arr
+
 
 	  | A.Binop (e1, op, e2) ->
           let e1' = expr builder e1
@@ -262,10 +286,11 @@ let translate (globals, functions) =
       | A.Call (f, act) ->
          let (fdef, fdecl) = StringMap.find f function_decls in
          let actuals = List.rev (List.map (expr builder) (List.rev act)) in
-         let result = (match fdecl.A.typ with A.Void -> ""
+         let result = (match fdecl.S.styp with A.Void -> ""
                                             | _ -> f ^ "_result") in
          L.build_call fdef (Array.of_list actuals) result builder
     in
+    *)
 
     (* Invoke "f builder" if the current block doesn't already
        have a terminal (e.g., a branch). *)
@@ -274,12 +299,103 @@ let translate (globals, functions) =
         Some _ -> ()
       | None -> ignore (f builder) in
 
+    (* Sast stmt builder and return the builder for each of the statement's successor *)
+    let rec expr builder = function
+      S.SLiteral (i, _) -> L.const_int i64_t i
+      | S.SBoolLit (b, _) -> L.const_int i1_t (if b then 1 else 0)
+      | S.SStringLit (s, _) -> L.build_global_stringptr(s^"\x00") "strptr" builder
+      | S.SNoexpr -> L.const_int i64_t 0
+      | S.SId (s, _) -> L.build_load (lookup s) s builder
+
+      | S.SPixelLit(e1, e2, e3, e4, _) ->
+          let size = L.const_int i64_t 4 in
+          let typ = L.pointer_type i64_t in
+          let arr = L.build_array_malloc typ size "pixel1" builder in
+          let arr = L.build_pointercast arr typ "pixel2" builder in
+          let arr_ptr = L.build_gep arr [|L.const_int i64_t 0|] "pixel3" builder in ignore(L.build_store (L.const_int i64_t e1) arr_ptr builder);
+          let arr_ptr = L.build_gep arr [|L.const_int i64_t 1|] "pixel4" builder in ignore(L.build_store (L.const_int i64_t e2) arr_ptr builder);
+          let arr_ptr = L.build_gep arr [|L.const_int i64_t 2|] "pixel5" builder in ignore(L.build_store (L.const_int i64_t e3) arr_ptr builder);
+          let arr_ptr = L.build_gep arr [|L.const_int i64_t 3|] "pixel6" builder in ignore(L.build_store (L.const_int i64_t e4) arr_ptr builder);
+          arr
+      (* | S.SMatrixLit(ell, _) ->  *)
+
+      (*| S.SCrop(s, e1, e2, e3, e4, _) -> *)
+
+
+      | S.SAccess(s, e, t) ->
+          let index = expr builder e in
+          let index = L.build_add index (L.const_int i64_t 1) "access1" builder in
+          let struct_ptr = expr builder (S.SId(s, t)) in
+          let arr = L.build_load (L.build_struct_gep struct_ptr 0 "access2" builder) "idl" builder in
+          let res = L.build_gep arr [| index |] "access3" builder in
+          L.build_load res "access4" builder
+
+      | S.SBinop(e1, op, e2, _) ->
+          let e1' = expr builder e1
+          and e2' = expr builder e2 in
+              (match op with
+               A.Add     ->   L.build_add
+              | A.Sub     -> L.build_sub
+              | A.Mult    -> L.build_mul
+              | A.Div     -> L.build_sdiv
+              | A.And     -> L.build_and
+              | A.Or      -> L.build_or
+              | A.Equal   -> L.build_icmp L.Icmp.Eq
+              | A.Neq     -> L.build_icmp L.Icmp.Ne
+              | A.Less    -> L.build_icmp L.Icmp.Slt
+              | A.Leq     -> L.build_icmp L.Icmp.Sle
+              | A.Greater -> L.build_icmp L.Icmp.Sgt
+              | A.Geq     -> L.build_icmp L.Icmp.Sge
+              ) e1' e2' "tmp" builder
+
+      | S.SUnop(op, e, _) ->
+          let e' = expr builder e in
+          (match op with
+            A.Neg       -> L.build_neg e' "tmp" builder
+            | A.Not     -> L.build_not e' "tmp" builder)
+            (*| A.Card    ->
+                        let struct_ptr = expr builder e in
+                        L.build_load (L.build_struct_gep struct_ptr 1 "struct1" builder) "idl" builder *)
+
+      | S.SAssign (s, e, _) -> let e' = expr builder e in
+                          ignore (L.build_store e' (lookup s) builder); e'
+
+      (*| S.SCall (s, el, _) ->  *)
+      (*| S.SCall takes the form ("string here", [e1; e2] or [e], _ --> look at this after sast done for
+           other possible function calls *)
+      (*
+      | S.SCall("open", [e1; e2], _) ->
+                L.build_call open_func [| expr builder e1; expr builder e2 |] "open" builder
+      | S.SCall("read", [e1], _) ->
+                L.build_call read_func [| expr builder e1|] "read" builder
+      | S.SCall("write", [e1; e2], _) ->
+                let typ = Semant.sexpr_to_type e2 in
+                (match typ with
+                A.String -> L.build_call write_str_func [|expr builder e1; expr builder e2 |] "write" builder
+                |A.Int -> L.build_call write_int_func [|expr builder e1; expr builder e2 |] "write" builder
+      | S.SCall("close", [e], _) ->
+                L.build_call close_func [|expr builder e|] "close" builder *)
+
+      | S.SCall(f, act, _) ->
+          let (fdef, fdecl) = StringMap.find f function_decls in
+          let actuals = List.rev (List.map (expr builder) (List.rev act)) in
+          let result = (match fdecl.S.styp with
+                                 A.Void -> ""
+                                 | _ -> f ^ "_result") in
+            L.build_call fdef (Array.of_list actuals) result builder
+
+      in
+
+
+
+
+
     (* Build the code for the given statement; return the builder for
        the statement's successor *)
-    let rec stmt builder = function
+    (* let rec stmt builder = function
         A.Block sl -> List.fold_left stmt builder sl
       | A.Expr e -> ignore (expr builder e); builder
-      | A.Return e -> ignore (match fdecl.A.typ with
+      | A.Return e -> ignore (match fdecl.S.styp with
           A.Void -> L.build_ret_void builder
         | _ -> L.build_ret (expr builder e) builder); builder
       | A.If (predicate, then_stmt, else_stmt) ->
@@ -315,12 +431,22 @@ let translate (globals, functions) =
       | A.For (e1, e2, e3, body) -> stmt builder
             ( A.Block [A.Expr e1 ; A.While (e2, A.Block [body ; A.Expr e3]) ] )
     in
+      *)
 
+    let rec stmt builder = function
+      S.SBlock sl -> List.fold_left stmt builder sl
+      |S.SExpr (e, _) -> ignore (expr builder e); builder
+
+      |S.SReturn (e) -> ignore (match !funcn.S.styp with
+          A.Void -> L.build_ret_void builder
+          | _ -> L.build_ret (expr builder e) builder); builder
+
+    in
     (* Build the code for each statement in the function *)
-    let builder = stmt builder (A.Block fdecl.A.body) in
+    let builder = stmt builder (S.SBlock fdecl.S.sbody) in
 
     (* Add a return if the last block falls off the end *)
-    add_terminal builder (match fdecl.A.typ with
+    add_terminal builder (match fdecl.S.styp with
         A.Void -> L.build_ret_void
       | t -> L.build_ret (L.const_int (ltype_of_typ t) 0))
   in

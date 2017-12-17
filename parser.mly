@@ -84,7 +84,6 @@ stmt:
   | FOR LPAREN expr_opt SEMI expr SEMI expr_opt RPAREN stmt
      { For($3, $5, $7, $9) }
   | WHILE LPAREN expr RPAREN stmt { While($3, $5) }
-  | FOR LPAREN typ ID COLON ID RPAREN stmt { EFor($3, $4, $6, $8) }
 
 expr_opt:
     /* nothing */ { Noexpr }
