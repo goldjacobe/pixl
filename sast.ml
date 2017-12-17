@@ -41,9 +41,8 @@ let rec string_of_sexpr = function
 SLiteral(l, _) -> string_of_int l
 | SBoolLit(true, _) -> "true"
 | SBoolLit(false, _) -> "false"
-| SMatrixLit(e1, _) -> "TODO"
+| SMatrixLit(ll, _) -> "[" ^ String.concat "," (List.map string_of_sexpr (List.concat ll)) ^ "]"
 | SPixelLit(v1,v2,v3,v4, _) -> "(" ^ string_of_sexpr v1 ^ "," ^ string_of_sexpr v2 ^ "," ^ string_of_sexpr v3 ^ "," ^ string_of_sexpr v4 ^ ")"
-| SMatrixLit(m, _) -> "(" ^ "matrix " ^ ")"
 | SStringLit(s, _) -> s
 | SId(s, _) -> s
 | SBinop(e1, o, e2, _) ->

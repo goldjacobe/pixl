@@ -77,9 +77,8 @@ let rec string_of_expr = function
     Literal(l) -> string_of_int l
   | BoolLit(true) -> "true"
   | BoolLit(false) -> "false"
-  | MatrixLit(e1) -> "TODO"
+  | MatrixLit(ll) -> "[" ^ String.concat "," (List.map string_of_expr (List.concat ll)) ^ "]"
   | PixelLit(v1,v2,v3,v4) -> "(" ^ string_of_expr v1 ^ "," ^ string_of_expr v2 ^ "," ^ string_of_expr v3 ^ "," ^ string_of_expr v4 ^ ")"
-  | MatrixLit(m) -> "(" ^ "matrix " ^ ")"
   | StringLit(s) -> s
   | Id(s) -> s
   | Binop(e1, o, e2) ->
@@ -118,7 +117,7 @@ let rec string_of_typ = function
   | Char -> "char"
   | File -> "file"
   | Float -> "float"
-  | Matrix(typ,e1,e2) -> string_of_typ typ ^ "[" ^ string_of_expr e1 ^ "," ^ string_of_expr e2 ^ "]"
+  | Matrix(typ) -> string_of_typ typ ^ " matrix"
 
 let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
 

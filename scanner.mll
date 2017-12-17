@@ -41,6 +41,7 @@ rule token = parse
 | "G"      { GREEN }
 | "B"      { BLUE }
 | "A"      { ALPHA }
+| "matrix" { MAT }
 | "int"    { INT }
 | "bool"   { BOOL }
 | "void"   { VOID }
