@@ -93,6 +93,8 @@ let rec string_of_expr = function
   | MatrixAccess(v, e1, e2) -> v ^ "[" ^ string_of_expr e1 ^ "]" ^ "[" ^ string_of_expr e2 ^ "]"
   | Rows(id) -> id ^ ".rows"
   | Cols(id) -> id ^ ".cols"
+  | Assignp(id, f, e1) -> id ^ "." ^ string_of_field f ^ "=" ^ string_of_expr e1 
+  | Assignm(id, e1, e2, value) -> id ^ "[" ^ string_of_expr e1 ^ "]" ^ "[" ^ string_of_expr e2 ^ "]" ^ "=" ^ string_of_expr value   
 
 
 let rec string_of_stmt = function

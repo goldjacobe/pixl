@@ -331,8 +331,66 @@ let translate (globals, functions) =
       | S.SBoolLit (b, _) -> L.const_int i1_t (if b then 1 else 0)
       | S.SStringLit (s, _) -> L.build_global_stringptr(s^"\x00") "strptr" builder
       | S.SNoexpr -> L.const_int i64_t 0
-      | S.SId (s, _) -> L.build_load (lookup s) s builder
+      | S.SAssignm(id, exp1, exp2, value, typ) -> let arr =  L.build_load (lookup id) id builder 
+                                             and value = expr builder value in
+                                             (match typ with
+                                             A.Pixel -> let pointer = L.build_gep arr [|L.const_int i64_t 1|] "matrix7" builder in
+                                                        let cols = L.build_load pointer "Access2" builder in
+                                                        let exp1 = expr builder exp1 in
+                                                        let exp2 = expr builder exp2 in
+                                                        let left = L.build_mul cols exp1 "left" builder in
+                                                        let left = L.build_add left exp2 "left2" builder in
+                                                        let left = L.build_mul left (L.const_int i64_t 4) "left3" builder in
+                                                        let loc = L.build_add left (L.const_int i64_t 2) "right" builder in
+                                                        let pointer1 = L.build_gep value [|L.const_int i64_t 0|] "matrix8" builder in
+                                                        let num1 = L.build_load pointer1 "Access3" builder in
+                                                        let pointer2 = L.build_gep value [|L.const_int i64_t 1|] "matrix8" builder in
+                                                        let num2 = L.build_load pointer2 "Access3" builder in
+                                                        let pointer3 = L.build_gep value [|L.const_int i64_t 2|] "matrix8" builder in
+                                                        let num3 = L.build_load pointer3 "Access3" builder in
+                                                        let pointer4 = L.build_gep arr [|L.const_int i64_t 3|] "matrix8" builder in
+                                                        let num4 = L.build_load pointer4 "Access3" builder in
+                                                        let arr_ptr = L.build_gep arr [|loc|] "pixel3" builder in ignore(L.build_store (num1) arr_ptr builder);
+                                                        let arr_ptr = L.build_gep arr [|L.build_add loc (L.const_int i64_t 1) "add1" builder|] "pixel4" builder in ignore(L.build_store (num2) arr_ptr builder);
+                                                        let arr_ptr = L.build_gep arr [|L.build_add loc (L.const_int i64_t 2) "add2" builder|] "pixel5" builder in ignore(L.build_store (num3) arr_ptr builder);
+                                                        let arr_ptr = L.build_gep arr [|L.build_add loc (L.const_int i64_t 3) "add3" builder|] "pixel6" builder in ignore(L.build_store (num4) arr_ptr builder);
+                                                        arr
 
+                                               
+                                             | A.Int ->  let pointer = L.build_gep arr [|L.const_int i64_t 1|] "matrix7" builder in
+                                   		       let cols = L.build_load pointer "Access2" builder in
+                                   		       let exp1 = expr builder exp1 in
+                                   		       let exp2 = expr builder exp2 in
+                                                       let left = L.build_mul cols exp1 "left" builder in
+                                                       let right = L.build_add exp2 (L.const_int i64_t 2) "right" builder in
+                                                       let loc = L.build_add left right "add" builder in
+                                                       let pointer = L.build_gep arr [|loc|] "matrix8" builder in
+                                                       ignore(L.build_store (value) pointer builder);
+                                                       arr
+                                             )
+                                              
+                                               
+      | S.SAssignp(id,field,e1,typ) -> let arr = L.build_load (lookup id) id builder 
+                                        and value = expr builder e1 in
+					(match field with
+                                          A.Red ->   let arr_ptr = L.build_gep arr [|L.const_int i64_t 0|] "pixel3" builder in ignore(L.build_store (value) arr_ptr builder)
+
+                                        | A.Green ->  let arr_ptr = L.build_gep arr [|L.const_int i64_t 1|] "pixel3" builder in ignore(L.build_store (value) arr_ptr builder)
+
+                                        | A.Blue ->  let arr_ptr = L.build_gep arr [|L.const_int i64_t 2|] "pixel3" builder in ignore(L.build_store (value) arr_ptr builder)
+
+                                        | A.Alpha ->  let arr_ptr = L.build_gep arr [|L.const_int i64_t 3|] "pixel3" builder in ignore(L.build_store (value) arr_ptr builder));
+
+					arr
+                                        
+      | S.SRows(id) ->    let arr = L.build_load (lookup id) id builder in
+                         let pointer = L.build_gep arr [|L.const_int i64_t 0|] "pixel7" builder in
+                         L.build_load pointer "Access1" builder
+      | S.SCols(id) ->    let arr = L.build_load (lookup id) id builder in
+                         let pointer = L.build_gep arr [|L.const_int i64_t 1|] "pixel7" builder in
+                         L.build_load pointer "Access1" builder
+
+      | S.SId (s, _) -> L.build_load (lookup s) s builder
       | S.SPixelLit(e1, e2, e3, e4, _) -> let size = L.const_int i64_t 4 in
           				  let typ = L.pointer_type i64_t in
           				  let arr = L.build_array_malloc typ size "pixel1" builder in
