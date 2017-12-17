@@ -52,7 +52,7 @@ SLiteral(l, _) -> string_of_int l
 | SAssign(v, e, _) -> v ^ " = " ^ string_of_sexpr e
 | SCall(f, el, _) ->
   f ^ "(" ^ String.concat ", " (List.map string_of_sexpr el) ^ ")"
-| SAccess(v, e, _) -> v ^ "[" ^ string_of_op e ^ "]"
+| SAccess(v, e, _) -> v ^ "." ^ string_of_op e 
 | SCrop(v, e1, e2, e3, e4, _) -> v ^ "<" ^ string_of_sexpr e1 ^ ":" ^ string_of_sexpr e2 ^ ", " ^ string_of_sexpr e3 ^ ":" ^ string_of_sexpr e4 ^ ">"
 | SNoexpr -> ""
 

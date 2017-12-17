@@ -1,9 +1,9 @@
 (* Abstract Syntax Tree and functions for printing it *)
 
 type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
-          And | Or | Addass | Red | Blue | Green | Alpha
+          And | Or | Addass | Red | Blue | Green | Alpha 
 
-type uop = Neg | Not
+type uop = Neg | Not 
 
 type typ = Int | Bool | Void | String | Float | Pixel | Char | File | Matrix of typ * expr * expr
 
@@ -68,16 +68,15 @@ let string_of_op = function
   | Blue -> "B"
   | Green -> "G"
   | Alpha -> "A"
-
 let string_of_uop = function
     Neg -> "-"
   | Not -> "!"
+
 
 let rec string_of_expr = function
     Literal(l) -> string_of_int l
   | BoolLit(true) -> "true"
   | BoolLit(false) -> "false"
-  | PixelLit(e1,e2,e3,e4) -> "(" ^ string_of_expr e1 ^ "," ^ string_of_expr e2 ^ "," ^ string_of_expr e3 ^ "," ^ string_of_expr e4 ^ ")"
   | MatrixLit(e1) -> "TODO"
   | PixelLit(v1,v2,v3,v4) -> "(" ^ string_of_expr v1 ^ "," ^ string_of_expr v2 ^ "," ^ string_of_expr v3 ^ "," ^ string_of_expr v4 ^ ")"
   | MatrixLit(m) -> "(" ^ "matrix " ^ ")"
