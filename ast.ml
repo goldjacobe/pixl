@@ -1,13 +1,11 @@
 (* Abstract Syntax Tree and functions for printing it *)
 
-type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
-          And | Or | Addass 
-
+type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq | And | Or
 type field = Red | Blue | Green | Alpha 
 
 type uop = Neg | Not 
 
-type typ = Int | Bool | Void | String | Float | Pixel | Char | File | Matrix of typ * expr * expr
+type typ = Int | Bool | Void | String | Float | Pixel | Char | File | Matrix of typ
 
 and expr =
     Literal of int
@@ -21,7 +19,6 @@ and expr =
   | Assign of string * expr
   | Assignp of string * field * expr
   | Assignm of string * expr * expr * expr 
-  | Addass of string * expr
   | Call of string * expr list
   | Access of string * field
   | Crop of string * expr * expr * expr * expr
@@ -65,8 +62,7 @@ let string_of_op = function
   | Geq -> ">="
   | And -> "&&"
   | Or -> "||"
-  | Addass -> "+="
-
+  
 let string_of_uop = function
     Neg -> "-"
   | Not -> "!"
@@ -81,9 +77,8 @@ let rec string_of_expr = function
     Literal(l) -> string_of_int l
   | BoolLit(true) -> "true"
   | BoolLit(false) -> "false"
-  | MatrixLit(e1) -> "TODO"
+  | MatrixLit(ll) -> "[" ^ String.concat "," (List.map string_of_expr (List.concat ll)) ^ "]"
   | PixelLit(v1,v2,v3,v4) -> "(" ^ string_of_expr v1 ^ "," ^ string_of_expr v2 ^ "," ^ string_of_expr v3 ^ "," ^ string_of_expr v4 ^ ")"
-  | MatrixLit(m) -> "(" ^ "matrix " ^ ")"
   | StringLit(s) -> s
   | Id(s) -> s
   | Binop(e1, o, e2) ->
@@ -122,7 +117,7 @@ let rec string_of_typ = function
   | Char -> "char"
   | File -> "file"
   | Float -> "float"
-  | Matrix(typ,e1,e2) -> string_of_typ typ ^ "[" ^ string_of_expr e1 ^ "," ^ string_of_expr e2 ^ "]"
+  | Matrix(typ) -> string_of_typ typ ^ " matrix"
 
 let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
 

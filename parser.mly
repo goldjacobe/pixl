@@ -9,7 +9,7 @@ open Ast
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
 %token RETURN IF ELSE FOR WHILE INT BOOL VOID STRING
 %token LBRAC RBRAC COLON CHAR LANGLE RANGLE
-%token EXP ADDASS PIXEL DOT ROWS COLS RED BLUE GREEN ALPHA
+%token EXP ADDASS PIXEL DOT ROWS COLS RED BLUE GREEN ALPHA MAT
 %token <int> LITERAL
 %token <string> ID
 %token <string> STR_LIT
@@ -62,7 +62,7 @@ typ:
   | VOID                            { Void }
   | STRING                          { String }
   | PIXEL                           { Pixel }
-  | typ LBRAC expr COMMA expr RBRAC { Matrix($1, $3, $5) }
+  | typ MAT                         { Matrix($1) }
 
 vdecl_list:
     /* nothing */    { [] }
@@ -118,7 +118,6 @@ expr:
   | ID DOT ALPHA ASSIGN expr                     { Assignp($1, Alpha , $5) }
   | ID LPAREN actuals_opt RPAREN               { Call($1, $3) }
   | LPAREN expr RPAREN                         { $2 }
-/*| ID ADDASS expr                             { Addass($1, $3) }*/
   | LBRAC mat_lit RBRAC                        { MatrixLit(List.rev($2)) }
   | pixel_lit                                  { $1 }
   | ID DOT RED                                 { Access($1, Red) }

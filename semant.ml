@@ -46,17 +46,29 @@ let check_function globals fdecls func =
   let rec expr_to_sexpr e = (match e with
       Literal x               -> SLiteral(x, Int)
     | BoolLit b               -> SBoolLit(b, Bool)
-    | PixelLit(x1,x2,x3,x4)   -> SPixelLit(expr_to_sexpr x1,expr_to_sexpr x2,expr_to_sexpr x3, expr_to_sexpr x4, Pixel)
+    | PixelLit(x1,x2,x3,x4)   -> SPixelLit(expr_to_sexpr x1,expr_to_sexpr x2,expr_to_sexpr x3,expr_to_sexpr x4,Pixel)
     | MatrixLit m             -> (check_matrix m)
     | Id s                    -> SId(s, type_of_identifier s)
     | StringLit s             -> SStringLit(s, String)
-    (*| Access(v,e)             -> (check_access v e)*) (*TODO*)
+    | Access(v,e)             -> (check_access v e) (*TODO*)
     | Binop(e1, op, e2)       -> (check_binop e1 op e2)
     | Unop(op, e)             -> (check_unop op e)
     | Noexpr                  -> SNoexpr
     | Assign(var, e)          -> (check_assign var e)
+    | Crop(var,r0,r1,c0,c1)   -> (check_crop var r0 r1 c0 c1)
     | Call(fname, actuals)    -> (check_call fname actuals)
+    | MatrixAccess(var,e1,e2) -> (check_matrix_access e var e1 e2)
   )
+
+  and check_matrix_access m var e1 e2 =
+    let se1 = expr_to_sexpr e1 in
+    let se2 = expr_to_sexpr e2 in
+    SMatrixAccess(var,se1,se2,type_of_identifier var)
+
+  and check_crop var r0 r1 c0 c1 =
+    if (r1 <= r0) then raise (Failure("Max row must be greater than or equal to min row."))
+    else if (c1 <= r0) then raise (Failure("Max column must be greater than or equal to min column."))
+    else SCrop(var, expr_to_sexpr r0, expr_to_sexpr r1, expr_to_sexpr c0, expr_to_sexpr r1, type_of_identifier var)
 
   and check_call fname actuals =
     let rec helper = function
@@ -75,11 +87,8 @@ let check_function globals fdecls func =
     let sactuals = helper (formals, actuals) in
     SCall(fname, sactuals, fd.typ)
 
-  (*and check_access var exp =
-    let sexpr = expr_to_sexpr exp in
-    if type_of_identifier var != sexpr_to_type sexpr
-    then raise (Failure("Couldn't access - variable and expression are of different types!"))
-    else SAccess(var, sexpr, sexpr_to_type sexpr)*)
+  and check_access var uop = 
+    SAccess(var,uop,Int)
 
   and check_binop e1 op e2 =
     let se1 = expr_to_sexpr e1 in
@@ -143,8 +152,8 @@ let check_function globals fdecls func =
     let err = (Failure("Illegal assignment" ^ string_of_typ lvaluet ^ " = " ^
       string_of_typ rvaluet ^ " in " ^ string_of_expr e)) in
     let _ = (match lvaluet with
-      Matrix(lt,le1,le2) -> (match rvaluet with
-        Matrix(rt,re1,re2) -> if rt = lt && re1 = le1 && re2 = le2 then lvaluet else raise err
+      Matrix(lt) -> (match rvaluet with
+        Matrix(rt) -> if rt = lt then lvaluet else raise err
       | _ -> raise err
       )
     | _ -> if lvaluet = rvaluet then lvaluet else raise err
@@ -159,7 +168,6 @@ let check_function globals fdecls func =
     | While(e, s)           -> (check_while e s)
     | For(e1,e2,e3,s)       -> (check_for e1 e2 e3 s)
   )
-
 
   and check_block sl =
     let rec helper = (function
@@ -198,6 +206,12 @@ let check_function globals fdecls func =
     if t = Bool then SWhile(se, ss)
     else raise (Failure ("expected Boolean expression in " ^ string_of_expr e))
 
+  and convert_lib_fdecl_to_sfdecl =
+   
+    (* Library functions *) 
+    let built_in_decls =
+        (StringMap.add "printA" [Int]) in built_in_decls
+
   and check_for e1 e2 e3 s =
     let se1 = expr_to_sexpr e1 in
     let se2 = expr_to_sexpr e2 in
@@ -217,14 +231,12 @@ let check_function globals fdecls func =
     | SUnop(_, _, typ)                 -> typ
     | SId(_, typ)                      -> typ
     | SAssign(_, _, typ)               -> typ
-    | SAddass(_, _,typ)                -> typ
     | SCrop(_,_,_,_,_,typ)             -> typ
     | SCall(_,_,typ)                   -> typ
     | SAccess(_,_,typ)                 -> typ
     | SNoexpr                          -> Void
 
   in
-
 
   {
     styp = func.typ;

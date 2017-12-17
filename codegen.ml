@@ -39,7 +39,7 @@ let translate (globals, functions) =
     | A.Char -> i8_t
     | A.String -> str_t
     | A.Pixel -> L.pointer_type(L.i64_type context) 
-    | A.Matrix(typ,i1,i2) -> L.pointer_type(L.i64_type context) in
+    | A.Matrix(typ) -> L.pointer_type(L.i64_type context) in
 
   (* Declare each global variable; remember its value in a map *)
   let global_vars =

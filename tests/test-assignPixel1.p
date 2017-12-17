@@ -2,5 +2,6 @@ int main() {
         int a;
         pixel p; 
         p = (70,50,70,90);
-        print(p.R);
+        a = p.R;
+        print(a);
 }
