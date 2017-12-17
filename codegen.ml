@@ -397,7 +397,8 @@ let translate (globals, functions) =
                            arr)
 
 
-      | S.SMatrixAccess(v,e1,e2,typ) -> let arr1 = L.build_load (lookup v) v builder in
+      | S.SMatrixAccess(v,e1,e2,typ) -> (match typ with 
+                                   A.Pixel -> let arr1 = L.build_load (lookup v) v builder in
                                    let pointer = L.build_gep arr1 [|L.const_int i64_t 1|] "matrix7" builder in
                                    let cols = L.build_load pointer "Access2" builder in
                                    let exp1 = expr builder e1 in
@@ -423,8 +424,8 @@ let translate (globals, functions) =
                                    let arr_ptr = L.build_gep arr2 [|L.const_int i64_t 2|] "pixel5" builder in ignore(L.build_store (num3) arr_ptr builder);
                                    let arr_ptr = L.build_gep arr2 [|L.const_int i64_t 3|] "pixel6" builder in ignore(L.build_store (num4) arr_ptr builder);
                                    arr2
-
-                                      (*let arr = L.build_load (lookup v) v builder in
+                                    
+                                   | A.Int -> let arr = L.build_load (lookup v) v builder in
                                    let pointer = L.build_gep arr [|L.const_int i64_t 1|] "matrix7" builder in
                                    let cols = L.build_load pointer "Access2" builder in
                                    let exp1 = expr builder e1 in
@@ -433,7 +434,7 @@ let translate (globals, functions) =
                                    let right = L.build_add exp2 (L.const_int i64_t 2) "right" builder in
                                    let loc = L.build_add left right "add" builder in
                                    let pointer = L.build_gep arr [|loc|] "matrix8" builder in
-                                   L.build_load pointer "Access3" builder*)
+                                   L.build_load pointer "Access3" builder)
 
 
       | S.SAccess(s, e, t) ->
