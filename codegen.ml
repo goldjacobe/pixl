@@ -347,7 +347,7 @@ let translate (globals, functions) =
           				  let arr_ptr = L.build_gep arr [|L.const_int i64_t 3|] "pixel6" builder in ignore(L.build_store (e4) arr_ptr builder);
           				  arr
 
-      | S.SMatrixLit(li, typ) -> (*let rows = List.length li in               
+      | S.SMatrixLit(li, typ) -> let rows = List.length li in               
                            let columns = List.length (List.hd li) in 
                            let mat = 4 * (rows * columns + 2) in
                            let size = L.const_int i64_t mat in 
@@ -375,8 +375,8 @@ let translate (globals, functions) =
                                 let arr_ptr = L.build_gep arr [|L.const_int i64_t (loc + 3)|] "matrix8" builder in ignore(L.build_store (num4) arr_ptr builder);
                                 done
                            done;
-                           arr*)
-                           
+                           arr
+                           (*
                            let rows = List.length li in
                            let columns = List.length (List.hd li) in
                            let mat = rows * columns + 2 in
@@ -394,7 +394,7 @@ let translate (globals, functions) =
                                 ignore(L.build_store (element) arr_ptr builder);
                                 done
                            done;
-                           arr
+                           arr *)
 
 
       | S.SMatrixAccess(v,e1,e2,typ) -> let arr1 = L.build_load (lookup v) v builder in
@@ -423,6 +423,18 @@ let translate (globals, functions) =
                                    let arr_ptr = L.build_gep arr2 [|L.const_int i64_t 2|] "pixel5" builder in ignore(L.build_store (num3) arr_ptr builder);
                                    let arr_ptr = L.build_gep arr2 [|L.const_int i64_t 3|] "pixel6" builder in ignore(L.build_store (num4) arr_ptr builder);
                                    arr2
+                                    
+                                      (*let arr = L.build_load (lookup v) v builder in
+                                   let pointer = L.build_gep arr [|L.const_int i64_t 1|] "matrix7" builder in
+                                   let cols = L.build_load pointer "Access2" builder in 
+                                   let exp1 = expr builder e1 in
+                                   let exp2 = expr builder e2 in
+                                   let left = L.build_mul cols exp1 "left" builder in
+                                   let right = L.build_add exp2 (L.const_int i64_t 2) "right" builder in
+                                   let loc = L.build_add left right "add" builder in
+                                   let pointer = L.build_gep arr [|loc|] "matrix8" builder in
+                                   L.build_load pointer "Access3" builder*)
+
 
       | S.SAccess(s, e, t) ->
           let arr = L.build_load (lookup s) s builder in
@@ -470,21 +482,14 @@ let translate (globals, functions) =
       | S.SAssign (s, e, _) -> let e' = expr builder e in
                           ignore (L.build_store e' (lookup s) builder); e'
 
-      (*| S.SCall (s, el, _) ->  *)
-      (*| S.SCall takes the form ("string here", [e1; e2] or [e], _ --> look at this after sast done for
-           other possible function calls *)
-      (*
-      | S.SCall("open", [e1; e2], _) ->
-                L.build_call open_func [| expr builder e1; expr builder e2 |] "open" builder
-      | S.SCall("read", [e1], _) ->
-                L.build_call read_func [| expr builder e1|] "read" builder
-      | S.SCall("write", [e1; e2], _) ->
-                let typ = Semant.sexpr_to_type e2 in
-                (match typ with
-                A.String -> L.build_call write_str_func [|expr builder e1; expr builder e2 |] "write" builder
-                |A.Int -> L.build_call write_int_func [|expr builder e1; expr builder e2 |] "write" builder
-      | S.SCall("close", [e], _) ->
-                L.build_call close_func [|expr builder e|] "close" builder *)
+      | S.SCall ("print", [e], _) | S.SCall ("printb", [e], _) ->
+          L.build_call printf_func [| int_format_str ; (expr builder e) |]
+            "printf" builder
+      | S.SCall ("prints", [e], _) ->
+          L.build_call printf_func [| str_format_str ; (expr builder e) |]
+            "printf" builder
+      | S.SCall ("printbig", [e], _) -> L.build_call printbig_func [| (expr builder e) |] "printbig" builder
+
 
       | S.SCall(f, act, _) ->
           let (fdef, fdecl) = StringMap.find f function_decls in
@@ -545,11 +550,45 @@ let translate (globals, functions) =
 
     let rec stmt builder = function
       S.SBlock sl -> List.fold_left stmt builder sl
-      |S.SExpr (e, _) -> ignore (expr builder e); builder
+      |S.SExpr (e, t) -> ignore (expr builder e); builder
 
       |S.SReturn (e) -> ignore (match !funcn.S.styp with
           A.Void -> L.build_ret_void builder
           | _ -> L.build_ret (expr builder e) builder); builder
+      |S.SIf (predicate, then_stmt, else_stmt) ->
+         let bool_val = expr builder predicate in
+         let merge_bb = L.append_block context "merge" the_function in
+
+         let then_bb = L.append_block context "then" the_function in
+         add_terminal (stmt (L.builder_at_end context then_bb) then_stmt)
+           (L.build_br merge_bb);
+
+         let else_bb = L.append_block context "else" the_function in
+         add_terminal (stmt (L.builder_at_end context else_bb) else_stmt)
+           (L.build_br merge_bb);
+
+         ignore (L.build_cond_br bool_val then_bb else_bb builder);
+         L.builder_at_end context merge_bb
+      |S.SWhile (predicate, body) ->
+          let pred_bb = L.append_block context "while" the_function in
+          ignore (L.build_br pred_bb builder);
+
+          let body_bb = L.append_block context "while_body" the_function in
+          add_terminal (stmt (L.builder_at_end context body_bb) body)
+            (L.build_br pred_bb);
+
+          let pred_builder = L.builder_at_end context pred_bb in
+          let bool_val = expr pred_builder predicate in
+
+          let merge_bb = L.append_block context "merge" the_function in
+          ignore (L.build_cond_br bool_val body_bb merge_bb pred_builder);
+          L.builder_at_end context merge_bb
+     | S.SFor (e1, e2, e3, body) -> stmt builder
+            ( S.SBlock [S.SExpr(e1,Int); S.SWhile (e2, S.SBlock [body ; S.SExpr(e3,Int)]) ] )
+
+      
+
+
 
     in
     (* Build the code for each statement in the function *)
