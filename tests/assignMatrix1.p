@@ -1,7 +1,12 @@
 int main() {
-        int[3,3] m;
-        int a;
-	m = [1,2,3;5,5,7;3,4,5];
-        a = m[1][1];
-        print(a);
+        pixel[2,2] m;
+        pixel a; 
+        pixel b;
+        int c;
+        a = (1,2,3,4);
+        b = (5,6,7,8);
+        m = [a,b;a,b];
+        b = m[1][1];
+        c = b[3];  
+        print(c); 
 }
