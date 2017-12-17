@@ -550,11 +550,45 @@ let translate (globals, functions) =
 
     let rec stmt builder = function
       S.SBlock sl -> List.fold_left stmt builder sl
-      |S.SExpr (e, _) -> ignore (expr builder e); builder
+      |S.SExpr (e, t) -> ignore (expr builder e); builder
 
       |S.SReturn (e) -> ignore (match !funcn.S.styp with
           A.Void -> L.build_ret_void builder
           | _ -> L.build_ret (expr builder e) builder); builder
+      |S.SIf (predicate, then_stmt, else_stmt) ->
+         let bool_val = expr builder predicate in
+         let merge_bb = L.append_block context "merge" the_function in
+
+         let then_bb = L.append_block context "then" the_function in
+         add_terminal (stmt (L.builder_at_end context then_bb) then_stmt)
+           (L.build_br merge_bb);
+
+         let else_bb = L.append_block context "else" the_function in
+         add_terminal (stmt (L.builder_at_end context else_bb) else_stmt)
+           (L.build_br merge_bb);
+
+         ignore (L.build_cond_br bool_val then_bb else_bb builder);
+         L.builder_at_end context merge_bb
+      |S.SWhile (predicate, body) ->
+          let pred_bb = L.append_block context "while" the_function in
+          ignore (L.build_br pred_bb builder);
+
+          let body_bb = L.append_block context "while_body" the_function in
+          add_terminal (stmt (L.builder_at_end context body_bb) body)
+            (L.build_br pred_bb);
+
+          let pred_builder = L.builder_at_end context pred_bb in
+          let bool_val = expr pred_builder predicate in
+
+          let merge_bb = L.append_block context "merge" the_function in
+          ignore (L.build_cond_br bool_val body_bb merge_bb pred_builder);
+          L.builder_at_end context merge_bb
+     | S.SFor (e1, e2, e3, body) -> stmt builder
+            ( S.SBlock [S.SExpr(e1,Int); S.SWhile (e2, S.SBlock [body ; S.SExpr(e3,Int)]) ] )
+
+      
+
+
 
     in
     (* Build the code for each statement in the function *)
