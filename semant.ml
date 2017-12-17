@@ -124,7 +124,7 @@ let check_function globals fdecls func =
     (match op with
       Add | Sub | Mult | Div when t1 = Int && t2 = Int -> SBinop(se1,op,se2,Int)
       | Equal | Neq when t1 = t2 -> SBinop(se1,op,se2,Bool)
-      | Less | Leq | Greater | Geq when t1 = Int && t2 = Int -> SBinop(se1,op,se2,Int)
+      | Less | Leq | Greater | Geq when t1 = Int && t2 = Int -> SBinop(se1,op,se2,Bool)
       | And | Or when t1 = Bool && t2 = Bool -> SBinop(se1,op,se2,Bool)
       | Add when t1 = String && t2 = String -> SBinop(se1,op,se2,String)
       | Add when t1 = Pixel && t2 = Pixel -> SBinop(se1,op,se2,Pixel)
