@@ -1,6 +1,4 @@
 int main() {
-        pixel p;
-        p = (1,2,3,4);
-        [p,p,p,p];
+	[1,3;4,6];
 	print(0);
 }

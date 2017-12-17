@@ -10,6 +10,8 @@ type sexpr =
   | SBinop of sexpr * op * sexpr * typ
   | SUnop of uop * sexpr * typ
   | SAssign of string * sexpr * typ
+  | SAssignp of string * field * sexpr * typ
+  | SAssignm of string * sexpr * sexpr * sexpr * typ
   | SCall of string * sexpr list * typ
   | SAccess of string * field * typ
   | SMatrixAccess of string * sexpr * sexpr * typ
