@@ -55,6 +55,8 @@ let check_function globals fdecls func =
     | Unop(op, e)             -> (check_unop op e)
     | Noexpr                  -> SNoexpr
     | Assign(var, e)          -> (check_assign var e)
+    | Assignp(var,field,e)    -> (check_assign_pixel var field e)
+    | Assignm(var,e1,e2,e3)    -> (check_assign_matrix var e1 e2 e3)
     | Crop(var,r0,r1,c0,c1)   -> (check_crop var r0 r1 c0 c1)
     | Call(fname, actuals)    -> (check_call fname actuals)
     | MatrixAccess(var,e1,e2) -> (check_matrix_access e var e1 e2)
@@ -64,6 +66,19 @@ let check_function globals fdecls func =
     let se1 = expr_to_sexpr e1 in
     let se2 = expr_to_sexpr e2 in
     SMatrixAccess(var,se1,se2,type_of_identifier var)
+
+  and check_assign_pixel var field exp =
+    let sexp = expr_to_sexpr exp in
+    let tp = sexpr_to_type sexp in
+    if tp != Int then raise(Failure("Pixel reassignment requires an Int value"))
+    else SAssignp(var,field,sexp,Int)
+
+  and check_assign_matrix var e1 e2 e3 = 
+    let se1 = expr_to_sexpr e1 in
+    let se2 = expr_to_sexpr e2 in
+    let se3 = expr_to_sexpr e3 in
+    let tp = sexpr_to_type se3 in
+    SAssignm(var,se1,se2,se3,tp)
 
   and check_crop var r0 r1 c0 c1 =
     if (r1 <= r0) then raise (Failure("Max row must be greater than or equal to min row."))
@@ -231,6 +246,8 @@ let check_function globals fdecls func =
     | SUnop(_, _, typ)                 -> typ
     | SId(_, typ)                      -> typ
     | SAssign(_, _, typ)               -> typ
+    | SAssignp(_,_,_, typ)             -> typ
+    | SAssignm(_,_,_,_, typ)           -> typ
     | SCrop(_,_,_,_,_,typ)             -> typ
     | SCall(_,_,typ)                   -> typ
     | SAccess(_,_,typ)                 -> typ
