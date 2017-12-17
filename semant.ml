@@ -57,7 +57,13 @@ let check_function globals fdecls func =
     | Assign(var, e)          -> (check_assign var e)
     | Crop(var,r0,r1,c0,c1)   -> (check_crop var r0 r1 c0 c1)
     | Call(fname, actuals)    -> (check_call fname actuals)
+    | MatrixAccess(var,e1,e2) -> (check_matrix_access e var e1 e2)
   )
+
+  and check_matrix_access m var e1 e2 =
+    let se1 = expr_to_sexpr e1 in
+    let se2 = expr_to_sexpr e2 in
+    SMatrixAccess(var,se1,se2,type_of_identifier var)
 
   and check_crop var r0 r1 c0 c1 =
     if (r1 <= r0) then raise (Failure("Max row must be greater than or equal to min row."))

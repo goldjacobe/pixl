@@ -5,16 +5,16 @@ type sexpr =
   | SStringLit of string * typ
   | SBoolLit of bool * typ
   | SMatrixLit of sexpr list list * typ
-  | SPixelLit of int * int * int * int * typ
+  | SPixelLit of sexpr * sexpr * sexpr * sexpr * typ
   | SId of string * typ
   | SBinop of sexpr * op * sexpr * typ
   | SUnop of uop * sexpr * typ
   | SAssign of string * sexpr * typ
-  | SAddass of string * sexpr * typ
   | SCall of string * sexpr list * typ
   | SAccess of string * sexpr * typ
   | SCrop of string * sexpr * sexpr * sexpr * sexpr * typ
   | SNoexpr
+  | SMatrixAccess of string * sexpr * sexpr * typ
 
 type sstmt =
     SBlock of sstmt list
@@ -33,7 +33,6 @@ type sfunc_decl = {
     sbody : sstmt list;
 }
 
-
   (* Pretty-printing functions *)
 
 let rec string_of_sexpr = function
@@ -41,12 +40,11 @@ SLiteral(l, _) -> string_of_int l
 | SBoolLit(true, _) -> "true"
 | SBoolLit(false, _) -> "false"
 | SMatrixLit(e1, _) -> "TODO"
-| SPixelLit(v1,v2,v3,v4, _) -> "(" ^ string_of_int v1 ^ "," ^ string_of_int v2 ^ "," ^ string_of_int v3 ^ "," ^ string_of_int v4 ^ ")"
+| SPixelLit(v1,v2,v3,v4, _) -> "(" ^ string_of_sexpr v1 ^ "," ^ string_of_sexpr v2 ^ "," ^ string_of_sexpr v3 ^ "," ^ string_of_sexpr v4 ^ ")"
 | SMatrixLit(m, _) -> "(" ^ "matrix " ^ ")"
 | SStringLit(s, _) -> s
 | SId(s, _) -> s
-| SBinop(e1, o, e2, _) ->
-  string_of_sexpr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_sexpr e2
+| SBinop(e1, o, e2, _) -> string_of_sexpr e1 ^ " " ^ string_of_op o ^ " " ^ string_of_sexpr e2
 | SUnop(o, e, _) -> string_of_uop o ^ string_of_sexpr e
 | SAssign(v, e, _) -> v ^ " = " ^ string_of_sexpr e
 | SCall(f, el, _) ->

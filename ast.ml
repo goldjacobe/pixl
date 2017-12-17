@@ -12,12 +12,11 @@ and expr =
   | StringLit of string
   | BoolLit of bool
   | MatrixLit of expr list list
-  | PixelLit of int * int * int * int (*TODO SHOULD CHANGE THESE TO EXPRS*)
+  | PixelLit of expr * expr * expr * expr (*TODO SHOULD CHANGE THESE TO EXPRS*)
   | Id of string
   | Binop of expr * op * expr
   | Unop of uop * expr
   | Assign of string * expr
-  | Addass of string * expr
   | Call of string * expr list
   | Access of string * expr
   | Crop of string * expr * expr * expr * expr
@@ -70,7 +69,7 @@ let rec string_of_expr = function
   | BoolLit(true) -> "true"
   | BoolLit(false) -> "false"
   | MatrixLit(e1) -> "TODO"
-  | PixelLit(v1,v2,v3,v4) -> "(" ^ string_of_int v1 ^ "," ^ string_of_int v2 ^ "," ^ string_of_int v3 ^ "," ^ string_of_int v4 ^ ")"
+  | PixelLit(v1,v2,v3,v4) -> "(" ^ string_of_expr v1 ^ "," ^ string_of_expr v2 ^ "," ^ string_of_expr v3 ^ "," ^ string_of_expr v4 ^ ")"
   | MatrixLit(m) -> "(" ^ "matrix " ^ ")"
   | StringLit(s) -> s
   | Id(s) -> s
