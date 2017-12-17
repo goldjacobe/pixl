@@ -198,6 +198,12 @@ let check_function globals fdecls func =
     if t = Bool then SWhile(se, ss)
     else raise (Failure ("expected Boolean expression in " ^ string_of_expr e))
 
+  and convert_lib_fdecl_to_sfdecl =
+   
+    (* Library functions *) 
+    let built_in_decls =
+        (StringMap.add "printA" [Int]) in built_in_decls
+
   and check_for e1 e2 e3 s =
     let se1 = expr_to_sexpr e1 in
     let se2 = expr_to_sexpr e2 in

@@ -5,7 +5,7 @@ type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
 
 type uop = Neg | Not 
 
-type typ = Int | Bool | Void | String | Float | Pixel | Char | File | Matrix of typ * expr * expr
+type typ = Int | Bool | Void | String | Float | Pixel | Char | File | Matrix of typ
 
 and expr =
     Literal of int
