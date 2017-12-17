@@ -1,5 +1,7 @@
 int main() {
 	int i;
-	for (i=0; i<3; i=i+1)
-	{}
+	for (i = 0; i < 3; i=i+1)
+	{
+	    print(i);
+	}
 }

@@ -127,7 +127,7 @@ expr:
   | ID LANGLE expr COLON expr COMMA expr COLON expr RANGLE { Crop($1, $3, $5, $7, $9) }
   | ID DOT ROWS                                            { Rows($1) } 
   | ID DOT COLS                                            { Cols($1) }
-  | MAT LPAREN expr COMMA expr COMMA expr RPAREN           { EMatrix($3, $5, $7) }
+  | MAT LPAREN expr COMMA expr COMMA typ RPAREN            { EMatrix($3, $5, $7) }
 
 actuals_opt:
     /* nothing */ { [] }

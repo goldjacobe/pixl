@@ -61,9 +61,14 @@ let check_function globals fdecls func =
     | Call(fname, actuals)    -> (check_call fname actuals)
     | MatrixAccess(var,e1,e2) -> (check_matrix_access e var e1 e2)
     | Rows(var)               -> SRows(var)
-    | EMatrix(e1,e2,e3)       -> SEMatrix(expr_to_sexpr e1, expr_to_sexpr e2, expr_to_sexpr e3)
+    | EMatrix(e1,e2,e3)       -> (check_empty_matrix e1 e2 e3)
     | Cols(var)               -> SCols(var)
   )
+
+  and check_empty_matrix e1 e2 tp =
+  let se1 = expr_to_sexpr e1 in
+  let se2 = expr_to_sexpr e2 in
+  SEMatrix(expr_to_sexpr e1, expr_to_sexpr e2, Matrix(tp))
 
   and check_matrix_access m var e1 e2 =
     let se1 = expr_to_sexpr e1 in
@@ -119,7 +124,7 @@ let check_function globals fdecls func =
     (match op with
       Add | Sub | Mult | Div when t1 = Int && t2 = Int -> SBinop(se1,op,se2,Int)
       | Equal | Neq when t1 = t2 -> SBinop(se1,op,se2,Bool)
-      | Less | Leq | Greater | Geq when t1 = Int && t2 = Int -> SBinop(se1,op,se2,Int)
+      | Less | Leq | Greater | Geq when t1 = Int && t2 = Int -> SBinop(se1,op,se2,Bool)
       | And | Or when t1 = Bool && t2 = Bool -> SBinop(se1,op,se2,Bool)
       | Add when t1 = String && t2 = String -> SBinop(se1,op,se2,String)
       | Add when t1 = Pixel && t2 = Pixel -> SBinop(se1,op,se2,Pixel)
@@ -171,7 +176,7 @@ let check_function globals fdecls func =
     let lvaluet = type_of_identifier var in
     let se = expr_to_sexpr e in
     let rvaluet = sexpr_to_type se in
-    let err = (Failure("Illegal assignment" ^ string_of_typ lvaluet ^ " = " ^
+    let err = (Failure("Illegal assignment: " ^ string_of_typ lvaluet ^ " = " ^
       string_of_typ rvaluet ^ " in " ^ string_of_expr e)) in
     let _ = (match lvaluet with
       Matrix(lt) -> (match rvaluet with
@@ -262,7 +267,7 @@ let check_function globals fdecls func =
     | SRows(_)                         -> Int
     | SCols(_)                         -> Int
     | SNoexpr                          -> Void
-    | SEMatrix(_,_,se)                  -> sexpr_to_type se
+    | SEMatrix(_,_,typ)                -> typ
 
   in
 
