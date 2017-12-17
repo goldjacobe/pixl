@@ -61,9 +61,16 @@ let check_function globals fdecls func =
     | Call(fname, actuals)    -> (check_call fname actuals)
     | MatrixAccess(var,e1,e2) -> (check_matrix_access e var e1 e2)
     | Rows(var)               -> SRows(var)
-    | EMatrix(e1,e2,e3)       -> SEMatrix(expr_to_sexpr e1, expr_to_sexpr e2, expr_to_sexpr e3)
+    | EMatrix(e1,e2,e3)       -> (check_empty_matrix e1 e2 e3)
     | Cols(var)               -> SCols(var)
   )
+
+  and check_empty_matrix e1 e2 e3 =
+  let se1 = expr_to_sexpr e1 in
+  let se2 = expr_to_sexpr e2 in
+  let se3 = expr_to_sexpr e3 in
+  let tp = sexpr_to_type se3 in
+  SEMatrix(expr_to_sexpr e1, expr_to_sexpr e2, expr_to_sexpr e3, Matrix(tp))
 
   and check_matrix_access m var e1 e2 =
     let se1 = expr_to_sexpr e1 in
@@ -262,7 +269,7 @@ let check_function globals fdecls func =
     | SRows(_)                         -> Int
     | SCols(_)                         -> Int
     | SNoexpr                          -> Void
-    | SEMatrix(_,_,se)                  -> sexpr_to_type se
+    | SEMatrix(_,_,_,typ)              -> typ
 
   in
 
