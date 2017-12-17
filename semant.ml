@@ -46,17 +46,23 @@ let check_function globals fdecls func =
   let rec expr_to_sexpr e = (match e with
       Literal x               -> SLiteral(x, Int)
     | BoolLit b               -> SBoolLit(b, Bool)
-    | PixelLit(x1,x2,x3,x4)   -> SPixelLit(x1,x2,x3,x4, Pixel)
+    | PixelLit(x1,x2,x3,x4)   -> SPixelLit(x1,x2,x3,x4,Pixel)
     | MatrixLit m             -> (check_matrix m)
     | Id s                    -> SId(s, type_of_identifier s)
     | StringLit s             -> SStringLit(s, String)
-    (*| Access(v,e)             -> (check_access v e)*) (*TODO*)
+    | Access(v,e)             -> (check_access v e) (*TODO*)
     | Binop(e1, op, e2)       -> (check_binop e1 op e2)
     | Unop(op, e)             -> (check_unop op e)
     | Noexpr                  -> SNoexpr
     | Assign(var, e)          -> (check_assign var e)
+    | Crop(var,r0,r1,c0,c1)   -> (check_crop var r0 r1 c0 c1)
     | Call(fname, actuals)    -> (check_call fname actuals)
   )
+
+  and check_crop var r0 r1 c0 c1 =
+    if (r1 <= r0) then raise (Failure("Max row must be greater than or equal to min row."))
+    else if (c1 <= r0) then raise (Failure("Max column must be greater than or equal to min column."))
+    else SCrop(var, expr_to_sexpr r0, expr_to_sexpr r1, expr_to_sexpr c0, expr_to_sexpr r1, type_of_identifier var)
 
   and check_call fname actuals =
     let rec helper = function
@@ -75,11 +81,13 @@ let check_function globals fdecls func =
     let sactuals = helper (formals, actuals) in
     SCall(fname, sactuals, fd.typ)
 
-  (*and check_access var exp =
+  and check_access var exp =
     let sexpr = expr_to_sexpr exp in
-    if type_of_identifier var != sexpr_to_type sexpr
-    then raise (Failure("Couldn't access - variable and expression are of different types!"))
-    else SAccess(var, sexpr, sexpr_to_type sexpr)*)
+    let t = sexpr_to_type sexpr in
+    (* (match t with
+       | Pixel -> SAccess(var,expr_to_sexpr exp,Int)
+    ) *)
+    SAccess(var,sexpr,Pixel)
 
   and check_binop e1 op e2 =
     let se1 = expr_to_sexpr e1 in
@@ -159,7 +167,6 @@ let check_function globals fdecls func =
     | While(e, s)           -> (check_while e s)
     | For(e1,e2,e3,s)       -> (check_for e1 e2 e3 s)
   )
-
 
   and check_block sl =
     let rec helper = (function
