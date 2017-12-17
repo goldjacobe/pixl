@@ -1,3 +1,5 @@
 int main() {
-	print(50);
+	string s;
+        s = "hello world";
+        prints(s);   
 }
