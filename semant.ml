@@ -65,7 +65,10 @@ let check_function globals fdecls func =
   and check_matrix_access m var e1 e2 =
     let se1 = expr_to_sexpr e1 in
     let se2 = expr_to_sexpr e2 in
-    SMatrixAccess(var,se1,se2,type_of_identifier var)
+    let tp = type_of_identifier var in
+    (match tp with
+    Matrix(m_typ) -> SMatrixAccess(var,se1,se2,m_typ)
+    )
 
   and check_assign_pixel var field exp =
     let sexp = expr_to_sexpr exp in
@@ -252,6 +255,7 @@ let check_function globals fdecls func =
     | SCrop(_,_,_,_,_,typ)             -> typ
     | SCall(_,_,typ)                   -> typ
     | SAccess(_,_,typ)                 -> typ
+    | SMatrixAccess(_,_,_,typ)         -> typ
     | SNoexpr                          -> Void
 
   in
