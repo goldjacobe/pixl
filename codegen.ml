@@ -348,7 +348,7 @@ let translate (globals, functions) =
           				  arr
 
       | S.SMatrixLit(li, typ) -> (match typ with
-                           A.Pixel -> let rows = List.length li in               
+                           A.Matrix(A.Pixel) -> let rows = List.length li in               
                            let columns = List.length (List.hd li) in 
                            let mat = 4 * (rows * columns + 2) in
                            let size = L.const_int i64_t mat in 
@@ -377,7 +377,7 @@ let translate (globals, functions) =
                                 done
                            done;
                            arr
-                          | A.Int -> let rows = List.length li in
+                          | A.Matrix(A.Int) -> let rows = List.length li in
                            let columns = List.length (List.hd li) in
                            let mat = rows * columns + 2 in
                            let size = L.const_int i64_t mat in
