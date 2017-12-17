@@ -9,5 +9,4 @@ int main() {
         b = m[1][1];
         c = b[3];  
         print(c); 
-        
 }

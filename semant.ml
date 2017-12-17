@@ -135,7 +135,7 @@ let check_function globals fdecls func =
       | Not when t = Bool -> SUnop(op, se, Bool)
       | _ -> raise (Failure ("illegal unary operator " ^ string_of_uop op ^
           string_of_typ t ^ " in " ^ string_of_expr e)))
-
+          
   and check_assign var e =
     let lvaluet = type_of_identifier var in
     let se = expr_to_sexpr e in
