@@ -65,12 +65,10 @@ let check_function globals fdecls func =
     | Cols(var)               -> SCols(var)
   )
 
-  and check_empty_matrix e1 e2 e3 =
+  and check_empty_matrix e1 e2 tp =
   let se1 = expr_to_sexpr e1 in
   let se2 = expr_to_sexpr e2 in
-  let se3 = expr_to_sexpr e3 in
-  let tp = sexpr_to_type se3 in
-  SEMatrix(expr_to_sexpr e1, expr_to_sexpr e2, expr_to_sexpr e3, Matrix(tp))
+  SEMatrix(expr_to_sexpr e1, expr_to_sexpr e2, Matrix(tp))
 
   and check_matrix_access m var e1 e2 =
     let se1 = expr_to_sexpr e1 in
@@ -178,7 +176,7 @@ let check_function globals fdecls func =
     let lvaluet = type_of_identifier var in
     let se = expr_to_sexpr e in
     let rvaluet = sexpr_to_type se in
-    let err = (Failure("Illegal assignment" ^ string_of_typ lvaluet ^ " = " ^
+    let err = (Failure("Illegal assignment: " ^ string_of_typ lvaluet ^ " = " ^
       string_of_typ rvaluet ^ " in " ^ string_of_expr e)) in
     let _ = (match lvaluet with
       Matrix(lt) -> (match rvaluet with
@@ -269,7 +267,7 @@ let check_function globals fdecls func =
     | SRows(_)                         -> Int
     | SCols(_)                         -> Int
     | SNoexpr                          -> Void
-    | SEMatrix(_,_,_,typ)              -> typ
+    | SEMatrix(_,_,typ)                -> typ
 
   in
 
