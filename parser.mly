@@ -17,6 +17,7 @@ open Ast
 
 %nonassoc NOELSE
 %nonassoc ELSE
+%nonassoc RED BLUE GREEN ALPHA
 %right ASSIGN
 %left OR
 %left AND
@@ -114,7 +115,7 @@ expr:
   | ID DOT RED ASSIGN expr                     { Assignp($1, Red, $5) }
   | ID DOT GREEN ASSIGN expr                   { Assignp($1, Green, $5) }
   | ID DOT BLUE ASSIGN expr                     { Assignp($1, Blue, $5) }
-  | ID DOT ALPHA ASSIGN expr                     { Assignp($1, Alpha, $5) }
+  | ID DOT ALPHA ASSIGN expr                     { Assignp($1, Alpha , $5) }
   | ID LPAREN actuals_opt RPAREN               { Call($1, $3) }
   | LPAREN expr RPAREN                         { $2 }
   | LBRAC mat_lit RBRAC                        { MatrixLit(List.rev($2)) }

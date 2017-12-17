@@ -1,7 +1,7 @@
 (* Abstract Syntax Tree and functions for printing it *)
 
-type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
-          And | Or | Red | Blue | Green | Alpha
+type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq | And | Or
+type field = Red | Blue | Green | Alpha 
 
 type uop = Neg | Not 
 
@@ -17,10 +17,10 @@ and expr =
   | Binop of expr * op * expr
   | Unop of uop * expr
   | Assign of string * expr
-  | Assignp of string * op * expr
+  | Assignp of string * field * expr
   | Assignm of string * expr * expr * expr 
   | Call of string * expr list
-  | Access of string * op
+  | Access of string * field
   | Crop of string * expr * expr * expr * expr
   | Noexpr 
   | MatrixAccess of string * expr * expr
@@ -62,14 +62,16 @@ let string_of_op = function
   | Geq -> ">="
   | And -> "&&"
   | Or -> "||"
-  | Red -> "R"
-  | Blue -> "B"
-  | Green -> "G"
-  | Alpha -> "A"
+  
 let string_of_uop = function
     Neg -> "-"
   | Not -> "!"
 
+let string_of_field = function
+     Red -> "R"
+  |  Blue -> "B"
+  | Green -> "G"
+  | Alpha -> "A"
 
 let rec string_of_expr = function
     Literal(l) -> string_of_int l
@@ -85,7 +87,7 @@ let rec string_of_expr = function
   | Assign(v, e) -> v ^ " = " ^ string_of_expr e
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
-  | Access(id, op) -> id ^ "." ^ string_of_op op 
+  | Access(id, field) -> id ^ "." ^ string_of_field field 
   | Crop(v, e1, e2, e3, e4) -> v ^ "<" ^ string_of_expr e1 ^ ":" ^ string_of_expr e2 ^ ", " ^ string_of_expr e3 ^ ":" ^ string_of_expr e4 ^ ">"
   | Noexpr -> ""
   | MatrixAccess(v, e1, e2) -> v ^ "[" ^ string_of_expr e1 ^ "]" ^ "[" ^ string_of_expr e2 ^ "]"

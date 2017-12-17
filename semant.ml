@@ -88,7 +88,7 @@ let check_function globals fdecls func =
     SCall(fname, sactuals, fd.typ)
 
   and check_access var uop = 
-    SAccess(var,uop,Pixel)
+    SAccess(var,uop,Int)
 
   and check_binop e1 op e2 =
     let se1 = expr_to_sexpr e1 in
