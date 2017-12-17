@@ -5,11 +5,11 @@ open Ast
 %}
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA
-%token PLUS MINUS TIMES DIVIDE ASSIGN NOT
+%token PLUS MINUS TIMES DIVIDE ASSIGN NOT 
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
 %token RETURN IF ELSE FOR WHILE INT BOOL VOID STRING
 %token LBRAC RBRAC COLON CHAR LANGLE RANGLE
-%token EXP ADDASS PIXEL
+%token EXP ADDASS PIXEL DOT ROWS COLS RED BLUE GREEN ALPHA
 %token <int> LITERAL
 %token <string> ID
 %token <string> STR_LIT
@@ -111,14 +111,24 @@ expr:
   | MINUS expr %prec NEG                       { Unop(Neg, $2) }
   | NOT expr                                   { Unop(Not, $2) }
   | ID ASSIGN expr                             { Assign($1, $3) }
+  | ID LBRAC expr RBRAC LBRAC expr RBRAC ASSIGN expr       { Assignm($1, $3, $6, $9) }
+  | ID DOT RED ASSIGN expr                     { Assignp($1, Red, $5) }
+  | ID DOT GREEN ASSIGN expr                   { Assignp($1, Green, $5) }
+  | ID DOT BLUE ASSIGN expr                     { Assignp($1, Blue, $5) }
+  | ID DOT ALPHA ASSIGN expr                     { Assignp($1, Alpha, $5) }
   | ID LPAREN actuals_opt RPAREN               { Call($1, $3) }
   | LPAREN expr RPAREN                         { $2 }
 /*| ID ADDASS expr                             { Addass($1, $3) }*/
   | LBRAC mat_lit RBRAC                        { MatrixLit(List.rev($2)) }
   | pixel_lit                                  { $1 }
-  | ID LBRAC expr RBRAC                        { Access($1, $3) }
+  | ID DOT RED                                 { Access($1, Red) }
+  | ID DOT BLUE                                { Access($1, Blue) }
+  | ID DOT GREEN                                { Access($1, Green) }
+  | ID DOT ALPHA                               { Access($1, Alpha) }
   | ID LBRAC expr RBRAC LBRAC expr RBRAC       { MatrixAccess($1, $3, $6)}
   | ID LANGLE expr COLON expr COMMA expr COLON expr RANGLE { Crop($1, $3, $5, $7, $9) }
+  | ID DOT ROWS                                            { Rows($1) } 
+  | ID DOT COLS                                            { Cols($1) }
 
 actuals_opt:
     /* nothing */ { [] }
@@ -137,4 +147,4 @@ row_lit:
   | row_lit COMMA expr            { $3 :: $1 }
 
 pixel_lit:
-    LPAREN LITERAL COMMA LITERAL COMMA LITERAL COMMA LITERAL RPAREN { PixelLit($2, $4, $6, $8) }
+    LPAREN expr COMMA expr COMMA expr COMMA expr RPAREN { PixelLit($2, $4, $6, $8) }

@@ -116,7 +116,9 @@ let check (globals, functions) =
 
       | Id s -> type_of_identifier s
       | StringLit _ -> String
-      | Access(v,e) -> Int
+      | Access(id,op) -> Int
+      | Rows(id) -> Int
+      | Cols(id) -> Int 
       | MatrixAccess(v,e1,e2) -> Pixel
       | Binop(e1, op, e2) as e -> let t1 = expr e1 and t2 = expr e2 in
 	      (match op with
