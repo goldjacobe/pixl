@@ -3,40 +3,46 @@ pixel matrix flip_horizontal(pixel matrix pm) {
     int width;
     int i;
     pixel matrix pm2;
-
-
     height = pm.rows;
     width = pm.cols;
 
+    pm2 = pm;
 
-    for (i = 0; i < )
 
-    
+    for (i = 0; i < height; i++)
+    {
+        for (j = 0; j < width; j++)
+        {
+            pm2[i][j] = pm[i][width-1-j];
+        }
+    }
+
+    return pm2;
 }
 
-pixel flip_vertical(pixel matrix pm) {
-    int row;
-    int col;
-    int i;
-    int j;
+pixel matrix flip_vertical(pixel matrix pm) {
     int height;
     int width;
-	pixel matrix tmp;
+    int i;
+    pixel matrix pm2;
+    height = pm.rows;
+    width = pm.cols;
 
-    height = pm.cols;
-    width = pm.rows;
-	
-	for(i = 0; i < height/2; row++) {
-		for(j=0; j < width; col++) {
-			tmp = pm[row, col];
-			pm[row, col] = pm[height - row - 1, col];
-			pm[height - row - 1, col] = tmp;
-		}
-	}
-	return pm
+    pm2 = pm;
+
+
+    for (i = 0; i < width; i++)
+    {
+        for (j = 0; j < height; j++)
+        {
+            pm2[j][i] = pm[height-1-j][i];
+        }
+    }
+
+    return pm2;
 }
 
-pixel matrix crop(pixel matrix pm1, pixel matrix pm2, int r1, int r2, int c1, int c2) {
+pixel matrix crop(pixel matrix pm, int r1, int r2, int c1, int c2) {
     int i;
     int j;
     // do you have to assign pm2

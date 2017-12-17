@@ -19,6 +19,7 @@ type sexpr =
   | SNoexpr
   | SRows of string
   | SCols of string
+  | SEMatrix of sexpr * sexpr * sexpr
 
 type sstmt =
     SBlock of sstmt list

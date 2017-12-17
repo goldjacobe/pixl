@@ -50,7 +50,6 @@ rule token = parse
 | "false"  { FALSE }
 | '^'      { EXP }
 | '"'      { read_string (Buffer.create 17) lexbuf }
-| "+="     { ADDASS }
 | ":"      { COLON }
 | "char"   { CHAR }
 | "pixel"  { PIXEL }

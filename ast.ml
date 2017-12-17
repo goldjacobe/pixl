@@ -26,6 +26,7 @@ and expr =
   | MatrixAccess of string * expr * expr
   | Rows of string
   | Cols of string
+  | EMatrix of expr * expr * expr
 
 type bind = typ * string
 
@@ -95,6 +96,7 @@ let rec string_of_expr = function
   | Cols(id) -> id ^ ".cols"
   | Assignp(id, f, e1) -> id ^ "." ^ string_of_field f ^ "=" ^ string_of_expr e1 
   | Assignm(id, e1, e2, value) -> id ^ "[" ^ string_of_expr e1 ^ "]" ^ "[" ^ string_of_expr e2 ^ "]" ^ "=" ^ string_of_expr value   
+  | EMatrix(e1,e2,e3) -> "matrix(" ^ string_of_expr e1 ^ ", " ^ string_of_expr e2 ^ ", " ^ string_of_expr e3 ^ ")"
 
 
 let rec string_of_stmt = function
