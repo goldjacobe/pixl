@@ -1,27 +1,31 @@
 (* Abstract Syntax Tree and functions for printing it *)
 
 type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq |
-          And | Or | Addass
+          And | Or | Red | Blue | Green | Alpha
 
 type uop = Neg | Not
 
-type typ = Int | Bool | Void | String | Float | Pixel | Char | File | Matrix of typ * expr * expr
+type typ = Int | Bool | Void | String | Float | Pixel | Char | File | Matrix of typ
 
 and expr =
     Literal of int
   | StringLit of string
   | BoolLit of bool
   | MatrixLit of expr list list
-  | PixelLit of expr * expr * expr * expr (*TODO SHOULD CHANGE THESE TO EXPRS*)
+  | PixelLit of expr * expr * expr * expr
   | Id of string
   | Binop of expr * op * expr
   | Unop of uop * expr
   | Assign of string * expr
+  | Assignp of string * op * expr
+  | Assignm of string * expr * expr * expr 
   | Call of string * expr list
-  | Access of string * expr
+  | Access of string * op
   | Crop of string * expr * expr * expr * expr
   | Noexpr 
   | MatrixAccess of string * expr * expr
+  | Rows of string
+  | Cols of string
 
 type bind = typ * string
 
@@ -58,7 +62,10 @@ let string_of_op = function
   | Geq -> ">="
   | And -> "&&"
   | Or -> "||"
-  | Addass -> "+="
+  | Red -> "R"
+  | Blue -> "B"
+  | Green -> "G"
+  | Alpha -> "A"
 
 let string_of_uop = function
     Neg -> "-"
@@ -68,6 +75,7 @@ let rec string_of_expr = function
     Literal(l) -> string_of_int l
   | BoolLit(true) -> "true"
   | BoolLit(false) -> "false"
+  | PixelLit(e1,e2,e3,e4) -> "(" ^ string_of_expr e1 ^ "," ^ string_of_expr e2 ^ "," ^ string_of_expr e3 ^ "," ^ string_of_expr e4 ^ ")"
   | MatrixLit(e1) -> "TODO"
   | PixelLit(v1,v2,v3,v4) -> "(" ^ string_of_expr v1 ^ "," ^ string_of_expr v2 ^ "," ^ string_of_expr v3 ^ "," ^ string_of_expr v4 ^ ")"
   | MatrixLit(m) -> "(" ^ "matrix " ^ ")"
@@ -79,11 +87,12 @@ let rec string_of_expr = function
   | Assign(v, e) -> v ^ " = " ^ string_of_expr e
   | Call(f, el) ->
       f ^ "(" ^ String.concat ", " (List.map string_of_expr el) ^ ")"
-  | Access(v, e) -> v ^ "[" ^ string_of_expr e ^ "]"
+  | Access(id, op) -> id ^ "." ^ string_of_op op 
   | Crop(v, e1, e2, e3, e4) -> v ^ "<" ^ string_of_expr e1 ^ ":" ^ string_of_expr e2 ^ ", " ^ string_of_expr e3 ^ ":" ^ string_of_expr e4 ^ ">"
   | Noexpr -> ""
-  | Access(v, e) -> v ^ "[" ^ string_of_expr e ^ "]"
   | MatrixAccess(v, e1, e2) -> v ^ "[" ^ string_of_expr e1 ^ "]" ^ "[" ^ string_of_expr e2 ^ "]"
+  | Rows(id) -> id ^ ".rows"
+  | Cols(id) -> id ^ ".cols"
 
 
 let rec string_of_stmt = function
@@ -108,7 +117,7 @@ let rec string_of_typ = function
   | Char -> "char"
   | File -> "file"
   | Float -> "float"
-  | Matrix(typ,e1,e2) -> string_of_typ typ ^ "[" ^ string_of_expr e1 ^ "," ^ string_of_expr e2 ^ "]"
+  | Matrix(typ) -> "matrix of " ^ string_of_typ typ
 
 let string_of_vdecl (t, id) = string_of_typ t ^ " " ^ id ^ ";\n"
 

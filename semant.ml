@@ -46,7 +46,7 @@ let check_function globals fdecls func =
   let rec expr_to_sexpr e = (match e with
       Literal x               -> SLiteral(x, Int)
     | BoolLit b               -> SBoolLit(b, Bool)
-    | PixelLit(x1,x2,x3,x4)   -> SPixelLit(x1,x2,x3,x4,Pixel)
+    | PixelLit(x1,x2,x3,x4)   -> SPixelLit(expr_to_sexpr x1,expr_to_sexpr x2,expr_to_sexpr x3,expr_to_sexpr x4,Pixel)
     | MatrixLit m             -> (check_matrix m)
     | Id s                    -> SId(s, type_of_identifier s)
     | StringLit s             -> SStringLit(s, String)
@@ -87,13 +87,8 @@ let check_function globals fdecls func =
     let sactuals = helper (formals, actuals) in
     SCall(fname, sactuals, fd.typ)
 
-  and check_access var exp =
-    let sexpr = expr_to_sexpr exp in
-    let t = sexpr_to_type sexpr in
-    (* (match t with
-       | Pixel -> SAccess(var,expr_to_sexpr exp,Int)
-    ) *)
-    SAccess(var,sexpr,Pixel)
+  and check_access var uop = 
+    SAccess(var,uop,Pixel)
 
   and check_binop e1 op e2 =
     let se1 = expr_to_sexpr e1 in
@@ -149,7 +144,7 @@ let check_function globals fdecls func =
       | Not when t = Bool -> SUnop(op, se, Bool)
       | _ -> raise (Failure ("illegal unary operator " ^ string_of_uop op ^
           string_of_typ t ^ " in " ^ string_of_expr e)))
-
+          
   and check_assign var e =
     let lvaluet = type_of_identifier var in
     let se = expr_to_sexpr e in
@@ -157,8 +152,8 @@ let check_function globals fdecls func =
     let err = (Failure("Illegal assignment" ^ string_of_typ lvaluet ^ " = " ^
       string_of_typ rvaluet ^ " in " ^ string_of_expr e)) in
     let _ = (match lvaluet with
-      Matrix(lt,le1,le2) -> (match rvaluet with
-        Matrix(rt,re1,re2) -> if rt = lt && re1 = le1 && re2 = le2 then lvaluet else raise err
+      Matrix(lt) -> (match rvaluet with
+        Matrix(rt) -> if rt = lt then lvaluet else raise err
       | _ -> raise err
       )
     | _ -> if lvaluet = rvaluet then lvaluet else raise err
@@ -230,14 +225,12 @@ let check_function globals fdecls func =
     | SUnop(_, _, typ)                 -> typ
     | SId(_, typ)                      -> typ
     | SAssign(_, _, typ)               -> typ
-    | SAddass(_, _,typ)                -> typ
     | SCrop(_,_,_,_,_,typ)             -> typ
     | SCall(_,_,typ)                   -> typ
     | SAccess(_,_,typ)                 -> typ
     | SNoexpr                          -> Void
 
   in
-
 
   {
     styp = func.typ;
@@ -268,3 +261,4 @@ let check (globals, functions) =
   with Not_found -> raise(Failure("no main function")) in
   let sfunctions = List.map (check_function globals fdecls) functions in
   (globals, sfunctions)
+

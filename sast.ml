@@ -11,10 +11,10 @@ type sexpr =
   | SUnop of uop * sexpr * typ
   | SAssign of string * sexpr * typ
   | SCall of string * sexpr list * typ
-  | SAccess of string * sexpr * typ
+  | SAccess of string * op * typ
+  | SMatrixAccess of string * sexpr * sexpr * typ
   | SCrop of string * sexpr * sexpr * sexpr * sexpr * typ
   | SNoexpr
-  | SMatrixAccess of string * sexpr * sexpr * typ
 
 type sstmt =
     SBlock of sstmt list
@@ -49,7 +49,7 @@ SLiteral(l, _) -> string_of_int l
 | SAssign(v, e, _) -> v ^ " = " ^ string_of_sexpr e
 | SCall(f, el, _) ->
   f ^ "(" ^ String.concat ", " (List.map string_of_sexpr el) ^ ")"
-| SAccess(v, e, _) -> v ^ "[" ^ string_of_sexpr e ^ "]"
+| SAccess(v, e, _) -> v ^ "[" ^ string_of_op e ^ "]"
 | SCrop(v, e1, e2, e3, e4, _) -> v ^ "<" ^ string_of_sexpr e1 ^ ":" ^ string_of_sexpr e2 ^ ", " ^ string_of_sexpr e3 ^ ":" ^ string_of_sexpr e4 ^ ">"
 | SNoexpr -> ""
 
