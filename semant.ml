@@ -239,9 +239,11 @@ let check_function globals fdecls func =
 let check (globals, functions) =
   let _ = report_duplicate (fun n -> "duplicate global " ^ n) (List.map snd globals) in
   let _ = check_binds (fun n -> "illegal void global" ^ n) globals in
-  let built_in_decls =  StringMap.singleton "print"
+  let built_in_decls =  StringMap.add "print"
     { typ = Void; fname = "print"; formals = [(Int, "s")];
-      locals = []; body = [] }
+      locals = []; body = [] } (StringMap.singleton "prints"
+     { typ = Void; fname = "print"; formals = [(String,"s")];
+       locals = []; body =  []  })
   in
   let check_functions m fdecl =
     if StringMap.mem fdecl.fname m then
