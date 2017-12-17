@@ -225,13 +225,16 @@ let check_function globals fdecls func =
 
   in
 
+
   {
     styp = func.typ;
     sfname = func.fname;
     sformals = func.formals;
     slocals = func.locals;
-    sbody = List.map stmt_to_sstmt func.body
+    sbody = List.map stmt_to_sstmt func.body;
   }
+
+
 
 let check (globals, functions) =
   let _ = report_duplicate (fun n -> "duplicate global " ^ n) (List.map snd globals) in
@@ -252,3 +255,7 @@ let check (globals, functions) =
   with Not_found -> raise(Failure("no main function")) in
   let sfunctions = List.map (check_function globals fdecls) functions in
   (globals, sfunctions)
+
+
+
+

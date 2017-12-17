@@ -109,6 +109,7 @@ let translate (globals, functions) =
                    with Not_found -> StringMap.find n global_vars
     in
 
+    (*
     (* Construct code for an expression; return its value *)
     let rec expr builder = function
         A.Literal i -> L.const_int i64_t i
@@ -166,6 +167,7 @@ let translate (globals, functions) =
                                             | _ -> f ^ "_result") in
          L.build_call fdef (Array.of_list actuals) result builder
     in
+    *)
 
     (* Invoke "f builder" if the current block doesn't already
        have a terminal (e.g., a branch). *)
@@ -192,25 +194,27 @@ let translate (globals, functions) =
           let arr_ptr = L.build_gep arr [|L.const_int i64_t 2|] "pixel5" builder in ignore(L.build_store (L.const_int i64_t e3) arr_ptr builder);
           let arr_ptr = L.build_gep arr [|L.const_int i64_t 3|] "pixel6" builder in ignore(L.build_store (L.const_int i64_t e4) arr_ptr builder);
       
-      | S.SMatrixLit(ell, _) -> 
+      (* | S.SMatrixLit(ell, _) ->  *)
 
-      | S.SCrop (s, e1, e2, e3, e4, _) -> 
+      (*| S.SCrop(s, e1, e2, e3, e4, _) -> *)
       
-      | S.SAccess (s, e, t) ->
+      
+      | S.SAccess(s, e, t) ->
           let index = expr builder e in
           let index = L.build_add index (L.const_int i32_t 1) "access1" builder in
           let struct_ptr = expr builder (S.SId(s, t)) in
           let arr = L.build_load (L.build_struct_gep struct_ptr 0 "access2" builder) "idl" builder in 
           let res = L.build_gep arr [| index |] "access3" builder in
           L.build_load res "access4" builder
-
-      | S.SBinop (e1, op, e2, _) ->
+      
+      | S.SBinop(e1, op, e2, _) ->
           let e1' = expr builder e1
           and e2' = expr builder e2 in
             let typ = Semant.sexpr_to_type e1 in 
             (match typ with 
-                A.typ(A.Int) |  A.typ(A.Bool) ->  (match op with
-              A.Add     ->   L.build_add
+                A.Int | A.BoolLit ->  
+              (match op with  
+               A.Add     ->   L.build_add
               | A.Sub     -> L.build_sub
               | A.Mult    -> L.build_mul
               | A.Div     -> L.build_sdiv
@@ -222,24 +226,24 @@ let translate (globals, functions) =
               | A.Leq     -> L.build_icmp L.Icmp.Sle
               | A.Greater -> L.build_icmp L.Icmp.Sgt
               | A.Geq     -> L.build_icmp L.Icmp.Sge
-              ) e1' e2' "tmp" builder
-              
+              ) e1' e2' "tmp" builder)
+          
       | S.SUnop(op, e, _) ->
           let e' = expr builder e in
           (match op with
             A.Neg       -> L.build_neg e' "tmp" builder
-            | A.Not     -> L.build_not e' "tmp" builder
+            | A.Not     -> L.build_not e' "tmp" builder)
             (*| A.Card    -> 
                         let struct_ptr = expr builder e in
-                        L.build_load (L.build_struct_gep struct_ptr 1 "struct1" builder) "idl" builder) *)
+                        L.build_load (L.build_struct_gep struct_ptr 1 "struct1" builder) "idl" builder *)  
       
       | S.SAssign (s, e, _) -> let e' = expr builder e in
-                           ignore (L.build_store e' (lookup s) builder); e'
+                          ignore (L.build_store e' (lookup s) builder); e'
 
-      | S.SCall (s, el, _) -> 
-      | (* S.SCall takes the form ("string here", [e1; e2] or [e], _ --> look at this after sast done for
+      (*| S.SCall (s, el, _) ->  *)
+      (*| S.SCall takes the form ("string here", [e1; e2] or [e], _ --> look at this after sast done for
            other possible function calls *)
-
+      (*
       | S.SCall("open", [e1; e2], _) ->
                 L.build_call open_func [| expr builder e1; expr builder e2 |] "open" builder
       | S.SCall("read", [e1], _) ->
@@ -247,21 +251,21 @@ let translate (globals, functions) =
       | S.SCall("write", [e1; e2], _) ->
                 let typ = Semant.sexpr_to_type e2 in
                 (match typ with 
-                A.typ(A.String) -> L.build_call write_str_func [|expr builder e1; expr builder e2 |] "write" builder
-                |A.typ(A.Int) -> L.build_call write_int_func [|expr builder e1; expr builder e2 |] "write" builder
-                
+                A.String -> L.build_call write_str_func [|expr builder e1; expr builder e2 |] "write" builder
+                |A.Int -> L.build_call write_int_func [|expr builder e1; expr builder e2 |] "write" builder
       | S.SCall("close", [e], _) ->
-                L.build_call close_func [|expr builder e|] "close" builder
+                L.build_call close_func [|expr builder e|] "close" builder *)
 
-      | S.SCall (f, act, _ ) ->
-            let (fdef, fdecl) = StringMap.find f function_decls in
+      | S.SCall(f, act, _) ->
+          let (fdef, fdecl) = StringMap.find f function_decls in
           let actuals = List.rev (List.map (expr builder) (List.rev act)) in
-          let result = (match fdecl.S.styp with 
-                                 A.typ(A.Void) -> ""
+          let result = (match fdecl.A.typ with 
+                                 A.Void -> ""
                                  | _ -> f ^ "_result") in
             L.build_call fdef (Array.of_list actuals) result builder
 
       in
+      
 
 
 
@@ -313,10 +317,11 @@ let translate (globals, functions) =
       S.SBlock sl -> List.fold_left stmt builder sl 
       |S.Sexpr (e, _) -> ignore (expr builder e); builder 
 
-      |S.SReturn (e, _) -> ignore (match !funcn.S.STyp with
-          A.Typ(A.Void) -> L.build_ret_void builder
+      |S.SReturn (e, _) -> ignore (match !funcn.A.typ with
+          A.Void -> L.build_ret_void builder
           | _ -> L.build_ret (expr builder e) builder); builder 
 
+    in
     (* Build the code for each statement in the function *)
     let builder = stmt builder (A.Block fdecl.A.body) in
 
