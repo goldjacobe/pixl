@@ -1,7 +1,10 @@
 int main() {
-	int matrix m;
-        int matrix p;
-        int a;
-        m = [1,3;4,6];
-        p = m;
+	pixel matrix m;
+        pixel p;
+        pixel a;
+        p  = (1,2,2,3);
+        m = [p,p;p,p];
+        a = m[1][1];
+        print(a.A);
+      
 }
