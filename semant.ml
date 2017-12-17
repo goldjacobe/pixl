@@ -255,7 +255,3 @@ let check (globals, functions) =
   with Not_found -> raise(Failure("no main function")) in
   let sfunctions = List.map (check_function globals fdecls) functions in
   (globals, sfunctions)
-
-
-
-

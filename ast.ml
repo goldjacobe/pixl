@@ -21,7 +21,8 @@ and expr =
   | Call of string * expr list
   | Access of string * expr
   | Crop of string * expr * expr * expr * expr
-  | Noexpr
+  | Noexpr 
+  | MatrixAccess of string * expr * expr
 
 type bind = typ * string
 
@@ -82,6 +83,9 @@ let rec string_of_expr = function
   | Access(v, e) -> v ^ "[" ^ string_of_expr e ^ "]"
   | Crop(v, e1, e2, e3, e4) -> v ^ "<" ^ string_of_expr e1 ^ ":" ^ string_of_expr e2 ^ ", " ^ string_of_expr e3 ^ ":" ^ string_of_expr e4 ^ ">"
   | Noexpr -> ""
+  | Access(v, e) -> v ^ "[" ^ string_of_expr e ^ "]"
+  | MatrixAccess(v, e1, e2) -> v ^ "[" ^ string_of_expr e1 ^ "]" ^ "[" ^ string_of_expr e2 ^ "]"
+
 
 let rec string_of_stmt = function
     Block(stmts) ->
