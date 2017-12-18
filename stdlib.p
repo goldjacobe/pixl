@@ -124,6 +124,16 @@ pixel matrix flipPixelMatrixV(pixel matrix pm) {
     return pm2;
 }
 
+bool pixelEquality(pixel p1, pixel p2) {
+    if ((p1.R == p2.R) && (p1.G == p2.G) && (p1.B == p2.B) && (p1.A == p2.A))
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
 
 pixel matrix and(pixel matrix pm1, pixel matrix pm2) {
     int i;
@@ -151,6 +161,7 @@ pixel matrix and(pixel matrix pm1, pixel matrix pm2) {
 
     return pm3;
 }
+
 
 
 
