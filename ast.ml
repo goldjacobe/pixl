@@ -3,7 +3,8 @@
 type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq | And | Or
 type field = Red | Blue | Green | Alpha 
 
-type uop = Neg | Not 
+type uop = Neg | Not | Increment | Decrement
+type flip = Bar | Underscore
 
 type typ = Int | Bool | Void | String | Float | Pixel | Char | File | Matrix of typ
 
@@ -22,6 +23,8 @@ and expr =
   | Call of string * expr list
   | Access of string * field
   | Crop of string * expr * expr * expr * expr
+  | HFlip of expr
+  | VFlip of expr
   | Noexpr 
   | MatrixAccess of string * expr * expr
   | Rows of string
@@ -67,6 +70,8 @@ let string_of_op = function
 let string_of_uop = function
     Neg -> "-"
   | Not -> "!"
+  | Increment -> "++"
+  | Decrement -> "--"
 
 let string_of_field = function
      Red -> "R"
@@ -97,6 +102,8 @@ let rec string_of_expr = function
   | Assignp(id, f, e1) -> id ^ "." ^ string_of_field f ^ "=" ^ string_of_expr e1 
   | Assignm(id, e1, e2, value) -> id ^ "[" ^ string_of_expr e1 ^ "]" ^ "[" ^ string_of_expr e2 ^ "]" ^ "=" ^ string_of_expr value   
   | EMatrix(e1,e2,tp) -> "matrix(" ^ string_of_expr e1 ^ ", " ^ string_of_expr e2 ^ ")"
+  | HFlip(e) -> "hflip " ^ string_of_expr e
+  | VFlip(e) -> "vflip " ^ string_of_expr e
 
 
 let rec string_of_stmt = function

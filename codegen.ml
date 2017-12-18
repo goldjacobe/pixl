@@ -66,7 +66,6 @@ let translate (globals, functions) =
   let str_con = L.var_arg_function_type (L.pointer_type i8_t) [| L.pointer_type i8_t; L.pointer_type i8_t |] in
   let str_con_func = L.declare_function "str_con" str_con the_module in
 
-
   (* declare read, which the read built-in function will call *)
   (*let read_t = L.var_arg_function_type str_t [| i32_t |] in
   let read_func = L.declare_function "read_sc" read_t the_module in *)

@@ -5,10 +5,10 @@ open Ast
 %}
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA
-%token PLUS MINUS TIMES DIVIDE ASSIGN NOT 
+%token PLUS MINUS TIMES DIVIDE ASSIGN NOT INCREMENT DECREMENT
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
 %token RETURN IF ELSE FOR WHILE INT BOOL VOID STRING
-%token LBRAC RBRAC COLON CHAR LANGLE RANGLE
+%token LBRAC RBRAC COLON CHAR LANGLE RANGLE BAR TILDA
 %token EXP PIXEL DOT ROWS COLS RED BLUE GREEN ALPHA MAT
 %token <int> LITERAL
 %token <string> ID
@@ -24,6 +24,7 @@ open Ast
 %left EQ NEQ
 %left LT GT LEQ GEQ
 %left PLUS MINUS
+%left INCREMENT DECREMENT
 %left TIMES DIVIDE
 %right NOT NEG
 
@@ -76,15 +77,14 @@ stmt_list:
   | stmt_list stmt { $2 :: $1 }
 
 stmt:
-    expr SEMI { Expr $1 }
-  | RETURN SEMI { Return Noexpr }
-  | RETURN expr SEMI { Return $2 }
-  | LBRACE stmt_list RBRACE { Block(List.rev $2) }
-  | IF LPAREN expr RPAREN stmt %prec NOELSE { If($3, $5, Block([])) }
-  | IF LPAREN expr RPAREN stmt ELSE stmt    { If($3, $5, $7) }
-  | FOR LPAREN expr_opt SEMI expr SEMI expr_opt RPAREN stmt
-     { For($3, $5, $7, $9) }
-  | WHILE LPAREN expr RPAREN stmt { While($3, $5) }
+    expr SEMI                                               { Expr $1 }
+  | RETURN SEMI                                             { Return Noexpr }
+  | RETURN expr SEMI                                        { Return $2 }
+  | LBRACE stmt_list RBRACE                                 { Block(List.rev $2) }
+  | IF LPAREN expr RPAREN stmt %prec NOELSE                 { If($3, $5, Block([])) }
+  | IF LPAREN expr RPAREN stmt ELSE stmt                    { If($3, $5, $7) }
+  | FOR LPAREN expr_opt SEMI expr SEMI expr_opt RPAREN stmt { For($3, $5, $7, $9) }
+  | WHILE LPAREN expr RPAREN stmt                           { While($3, $5) }
 
 expr_opt:
     /* nothing */ { Noexpr }
@@ -128,6 +128,10 @@ expr:
   | ID LANGLE expr COLON expr COMMA expr COLON expr RANGLE { Crop($1, $3, $5, $7, $9) }
   | ID DOT ROWS                                            { Rows($1) } 
   | ID DOT COLS                                            { Cols($1) }
+  | BAR expr                                               { VFlip($2) }
+  | TILDA expr                                             { HFlip($2) }
+  | expr INCREMENT                                         { Unop(Increment, $1) }
+  | expr DECREMENT                                         { Unop(Decrement, $1) }
   | MAT LPAREN expr COMMA expr COMMA typ RPAREN            { EMatrix($3, $5, $7) }
 
 actuals_opt:
