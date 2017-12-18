@@ -60,6 +60,11 @@ let translate (globals, functions) =
   let write_img = L.var_arg_function_type i64_t [|arg1; str_t; str_t |] in
   let write_img_func = L.declare_function "write_img" write_img the_module in
 
+  let str_of_int = L.var_arg_function_type (L.pointer_type i8_t) [| i64_t |] in
+  let str_of_int_func = L.declare_function "str_of_int" str_of_int the_module in
+
+  let str_con = L.var_arg_function_type (L.pointer_type i8_t) [| L.pointer_type i8_t; L.pointer_type i8_t |] in
+  let str_con_func = L.declare_function "str_con" str_con the_module in
 
   (* declare read, which the read built-in function will call *)
   (*let read_t = L.var_arg_function_type str_t [| i32_t |] in
@@ -580,6 +585,10 @@ let translate (globals, functions) =
           L.build_call read_img_func [| (expr builder e) |] "read_img" builder
       | S.SCall ("write", [e1;e2;e3], _)->
           L.build_call write_img_func [|(expr builder e1); (expr builder e2); (expr builder e3)|] "write_img" builder
+      | S.SCall ("str_of_int", [e], _) ->
+          L.build_call str_of_int_func [| (expr builder e) |] "str_of_int" builder
+      | S.SCall ("str_con", [e1;e2], _) ->
+          L.build_call str_con_func [| (expr builder e1); (expr builder e2) |] "str_con" builder
       | S.SCall(f, act, _) ->
           let (fdef, fdecl) = StringMap.find f function_decls in
           let actuals = List.rev (List.map (expr builder) (List.rev act)) in
