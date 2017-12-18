@@ -10,12 +10,7 @@ int main()
 
         p = (100,2,3,4);
         r = p.R;
-
-        prints("current red is ");
-        print(r);
-
         p2 = enhanceRed(p, 20);
         r2 = p2.R;
-        prints("new red is ");
         print(r2);
 }

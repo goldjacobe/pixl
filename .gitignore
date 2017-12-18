@@ -4,3 +4,5 @@ pixl.native
 *~
 .testall.log
 *.o
+*.diff
+*.exe
