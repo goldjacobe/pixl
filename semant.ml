@@ -155,6 +155,7 @@ let check_function globals fdecls func =
       | And | Or when t1 = Bool && t2 = Bool -> SBinop(se1,op,se2,Bool)
       | Add when t1 = String && t2 = String -> SBinop(se1,op,se2,String)
       | Add when t1 = Pixel && t2 = Pixel -> SBinop(se1,op,se2,Pixel)
+      | And when t1 = Matrix(Pixel) && t2 = Matrix(Pixel) -> SCall("matrixAnd", [se1;se2], Matrix(Pixel))
       | _ -> raise (Failure ("illegal binary operator " ^
           string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
           string_of_typ t2 ^ " in " ^ string_of_expr e1 ^ string_of_op op ^ string_of_expr e2))
@@ -203,7 +204,7 @@ let check_function globals fdecls func =
     let lvaluet = type_of_identifier var in
     let se = expr_to_sexpr e in
     let rvaluet = sexpr_to_type se in
-    let err = (Failure("Illegal assignment: " ^ string_of_typ lvaluet ^ " = " ^
+    let err = (Failure("Illegal assignment trying to assign " ^ string_of_expr e ^ " to " ^ var ^ "\n" ^ string_of_typ lvaluet ^ " = " ^
       string_of_typ rvaluet ^ " in " ^ string_of_expr e)) in
     let _ = (match lvaluet with
       Matrix(lt) -> (match rvaluet with

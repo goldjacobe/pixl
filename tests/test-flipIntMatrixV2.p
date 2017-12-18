@@ -5,9 +5,9 @@ int main() {
     new = |m;
 
     if (new[0][0] == 3) {
-		prints("pass")
+		prints("pass");
 	}
 	else {
-		prints("fail")
+		prints("fail");
 	}
 }

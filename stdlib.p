@@ -84,12 +84,12 @@ int matrix flipIntMatrixV(int matrix m) {
     int height;
     int width;
     int i;
+    int j;
     int matrix m2;
-    height = pm.rows;
-    width = pm.cols;
+    height = m.rows;
+    width = m.cols;
 
     m2 = m;
-
 
     for (i = 0; i < width; i=i+1)
     {
@@ -106,6 +106,7 @@ pixel matrix flipPixelMatrixV(pixel matrix pm) {
     int height;
     int width;
     int i;
+    int j;
     pixel matrix pm2;
     height = pm.rows;
     width = pm.cols;
@@ -135,7 +136,7 @@ bool pixelEquality(pixel p1, pixel p2) {
     }
 }
 
-pixel matrix and(pixel matrix pm1, pixel matrix pm2) {
+pixel matrix matrixAnd(pixel matrix pm1, pixel matrix pm2) {
     int i;
     int j;
 
@@ -154,7 +155,7 @@ pixel matrix and(pixel matrix pm1, pixel matrix pm2) {
 
             else
             {
-                pm3 = (255,255,255,255);
+                pm3[i][j] = (255,255,255,255);
             }
         }
     }
