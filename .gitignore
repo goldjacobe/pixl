@@ -9,4 +9,4 @@ pixl.native
 *.ll
 *.s
 *.diff
-
+penguins/*
