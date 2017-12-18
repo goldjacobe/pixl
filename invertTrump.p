@@ -3,6 +3,6 @@ int main() {
     pixel matrix outputMatrix;
     inputMatrix = read("trump.jpg");
 
-    outputMatrix = invert(inputMatrix);
+    outputMatrix = invertMatrix(inputMatrix);
     write(outputMatrix,"enhancedTrump","jpg");
 }

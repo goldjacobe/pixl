@@ -230,7 +230,7 @@ pixel matrix matrixAnd(pixel matrix pm1, pixel matrix pm2) {
     return pm3;
 }
 
-pixel matrix invert(pixel matrix pm) {
+pixel matrix invertMatrix(pixel matrix pm) {
     int i;
     int j;
 
@@ -245,6 +245,12 @@ pixel matrix invert(pixel matrix pm) {
     }
 
     return pm1;
+}
+
+pixel invert(pixel og) {
+    pixel p;
+    p = (255,255,255,255) - og;
+    return p;
 }
 
 pixel addPixel(pixel p1, pixel p2) {
