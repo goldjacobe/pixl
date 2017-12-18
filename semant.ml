@@ -50,7 +50,7 @@ let check_function globals fdecls func =
     | MatrixLit m             -> (check_matrix m)
     | Id s                    -> SId(s, type_of_identifier s)
     | StringLit s             -> SStringLit(s, String)
-    | Access(v,e)             -> (check_access v e) (*TODO*)
+    | Access(v,f)             -> (check_access v f) (*TODO*)
     | Binop(e1, op, e2)       -> (check_binop e1 op e2)
     | Unop(op, e)             -> (check_unop op e)
     | Noexpr                  -> SNoexpr
@@ -140,8 +140,9 @@ let check_function globals fdecls func =
     let sactuals = helper (formals, actuals) in
     SCall(fname, sactuals, fd.typ)
 
-  and check_access var uop =
-    SAccess(var,uop,Int)
+  and check_access var f =
+    if (type_of_identifier var = Pixel) then SAccess(var,f,Int)
+    else raise(Failure("Cannot call field functions (R/G/B/A) on non-Pixel variables"))
 
   and check_binop e1 op e2 =
     let se1 = expr_to_sexpr e1 in
