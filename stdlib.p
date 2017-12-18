@@ -79,3 +79,82 @@ pixel matrix flipPixelMatrixH(pixel matrix pm) {
 
     return pm2;
 }
+
+int matrix flipIntMatrixV(int matrix m) {
+    int height;
+    int width;
+    int i;
+    int matrix m2;
+    height = pm.rows;
+    width = pm.cols;
+
+    m2 = m;
+
+
+    for (i = 0; i < width; i=i+1)
+    {
+        for (j = 0; j < height; j=j+1)
+        {
+            m2[j][i] = m[height-1-j][i];
+        }
+    }
+
+    return m2;
+}
+
+pixel matrix flipPixelMatrixV(pixel matrix pm) {
+    int height;
+    int width;
+    int i;
+    pixel matrix pm2;
+    height = pm.rows;
+    width = pm.cols;
+
+    pm2 = pm;
+
+
+    for (i = 0; i < width; i=i+1)
+    {
+        for (j = 0; j < height; j=j+1)
+        {
+            pm2[j][i] = pm[height-1-j][i];
+        }
+    }
+
+    return pm2;
+}
+
+
+pixel matrix and(pixel matrix pm1, pixel matrix pm2) {
+    int i;
+    int j;
+
+    pixel matrix pm3;
+
+    pm3 = pm1;
+
+    for (i = 0; i < pm1.rows; i=i+1)
+    {
+        for (j = 0; j < pm1.cols; j=j+1)
+        {
+            if (pixelEquality(pm1[i][j], pm2[i][j]))
+            {
+                pm3[i][j] = pm1[i][j];
+            }
+
+            else
+            {
+                pm3 = (255,255,255,255);
+            }
+        }
+    }
+
+    return pm3;
+}
+
+
+
+
+
+
+
