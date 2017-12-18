@@ -35,3 +35,47 @@ int matrix cropIntMatrix(int matrix m, int r1, int r2, int c1, int c2) {
 
     return m2;
 }
+
+int matrix flipIntMatrixH(int matrix m) {
+    int height;
+    int width;
+    int i;
+    int j;
+    int matrix m2;
+    height = m.rows;
+    width = m.cols;
+
+    m2 = m;
+
+    for (i = 0; i < height; i=i+1)
+    {
+        for (j = 0; j < width; j=j+1)
+        {
+            m2[i][j] = m[i][width-1-j];
+        }
+    }
+
+    return m2;
+}
+
+pixel matrix flipPixelMatrixH(pixel matrix pm) {
+    int height;
+    int width;
+    int i;
+    int j;
+    pixel matrix pm2;
+    height = pm.rows;
+    width = pm.cols;
+
+    pm2 = pm;
+
+    for (i = 0; i < height; i=i+1)
+    {
+        for (j = 0; j < width; j=j+1)
+        {
+            pm2[i][j] = pm[i][width-1-j];
+        }
+    }
+
+    return pm2;
+}
