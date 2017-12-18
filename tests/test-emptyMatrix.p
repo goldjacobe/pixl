@@ -1,6 +1,5 @@
 int main() {
 	int matrix m;
-        m = matrix(10,10,int);
-        print(10)
-              
+        m = matrix(5,10,int);
+        print(m.rows);     
 }
