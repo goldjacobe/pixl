@@ -2,6 +2,7 @@
 
 open Ast
 open Sast
+module E = Exceptions
 
 module StringMap = Map.Make(String)
 
@@ -14,8 +15,8 @@ let report_duplicate exceptf list =
 
 
 let rec check_binds exceptf = function
-    (Void, s) :: tl -> raise (Failure(exceptf s))
-  | hd :: tl        -> check_binds exceptf tl
+    (Void, s) :: _ -> raise (Failure(exceptf s))
+  | _ :: tl        -> check_binds exceptf tl
   | _               -> ()
 
 
@@ -73,6 +74,7 @@ let check_function globals fdecls func =
     (match tp with 
       Matrix(Pixel) -> SCall("flipPixelMatrixH", [se], Matrix(Pixel))
       | Matrix(Int) -> SCall("flipIntMatrixH", [se], Matrix(Int))
+      | _ -> raise(Failure("Can only flip int or pixel matrices"))
     )
   
   and check_v_flip e =
@@ -81,26 +83,28 @@ let check_function globals fdecls func =
     (match tp with 
       Matrix(Pixel) -> SCall("flipPixelMatrixV", [se], Matrix(Pixel))
       | Matrix(Int) -> SCall("flipIntMatrixV", [se], Matrix(Int))
+      | _ -> raise(E.IncorrectFlipExpr("Can only flip int or pixel matrices"))
     )
 
   and check_empty_matrix e1 e2 tp =
   let se1 = expr_to_sexpr e1 in
   let se2 = expr_to_sexpr e2 in
-  SEMatrix(expr_to_sexpr e1, expr_to_sexpr e2, Matrix(tp))
+  SEMatrix(se1, se2, Matrix(tp))
 
   and check_matrix_access m var e1 e2 =
     let se1 = expr_to_sexpr e1 in
     let se2 = expr_to_sexpr e2 in
     let tp = type_of_identifier var in
     (match tp with
-    Matrix(m_typ) -> SMatrixAccess(var,se1,se2,m_typ)
+      Matrix(m_typ) -> SMatrixAccess(var,se1,se2,m_typ)
+      | _ -> raise(E.InvalidMatrixAccess("Cannot access elements of non-matrix type"))
     )
 
   and check_assign_pixel var field exp =
     let sexp = expr_to_sexpr exp in
     let tp = sexpr_to_type sexp in
     if type_of_identifier var != Pixel then raise(Failure("Trying to assign to a pixel but found a " ^ string_of_typ (type_of_identifier var)))
-    else if tp != Int then raise(Failure("Pixel reassignment requires an Int value"))
+    else if tp != Int then raise(E.NonIntPixelReassignment("Pixel reassignment requires an Int value"))
     else SAssignp(var,field,sexp,Int)
 
   and check_assign_matrix var e1 e2 e3 =
@@ -116,8 +120,8 @@ let check_function globals fdecls func =
     let sr1 = expr_to_sexpr r1 in
     let sc0 = expr_to_sexpr c0 in
     let sc1 = expr_to_sexpr c1 in
-    if (r1 < r0) then raise (Failure("Max row must be greater than or equal to min row."))
-    else if (c1 < c1) then raise (Failure("Max column must be greater than or equal to min column."))
+    if (r1 < r0) then raise (E.InvalidCropDimensions("Max row must be greater than or equal to min row."))
+    else if (c1 < c1) then raise (E.InvalidCropDimensions("Max column must be greater than or equal to min column."))
     else (match (type_of_identifier var) with 
       Matrix(Pixel) -> SCall("cropPixelMatrix", [svar; sr0; sr1; sc0; sc1], Matrix(Pixel))
       | Matrix(Int) -> SCall("cropIntMatrix", [svar; sr0; sr1; sc0; sc1], Matrix(Int))
@@ -126,12 +130,12 @@ let check_function globals fdecls func =
   and check_call fname actuals =
     let rec helper = function
         ([], []) -> []
-      | (_, []) | ([], _) -> raise(Failure("Incorrect number of arguments in call to " ^ fname))
+      | (_, []) | ([], _) -> raise(E.IncorrectNumberOfArguments("Incorrect number of arguments in call to " ^ fname))
       | ((ft, _) :: formals, e :: actuals) ->
         let se = expr_to_sexpr e in
         let t = sexpr_to_type se in
         if ft = t then se :: helper (formals, actuals) else
-          raise (Failure ("illegal actual argument found " ^
+          raise (E.IllegalArgument ("illegal actual argument found " ^
           string_of_typ t ^ " expected " ^ string_of_typ ft ^ " in " ^
           string_of_expr e))
     in
@@ -142,7 +146,7 @@ let check_function globals fdecls func =
 
   and check_access var f =
     if (type_of_identifier var = Pixel) then SAccess(var,f,Int)
-    else raise(Failure("Cannot call field functions (R/G/B/A) on non-Pixel variables"))
+    else raise(E.InvalidPixelAccess("Cannot call field functions (R/G/B/A) on non-Pixel variables"))
 
   and check_binop e1 op e2 =
     let se1 = expr_to_sexpr e1 in
@@ -173,7 +177,7 @@ let check_function globals fdecls func =
         | hd :: _ ->
          let t1 = sexpr_to_type hd in
          let t2 = sexpr_to_type se in
-         if t1 = t2 then (List.append l [se]) else raise(Failure("MatrixLit types inconsistent"))
+         if t1 = t2 then (List.append l [se]) else raise(E.InconsistentMatrixTypes("MatrixLit types inconsistent"))
       in
     let add_if_match_2 m l =
       let sl = List.fold_left add_if_match_1 [] l in
@@ -184,7 +188,7 @@ let check_function globals fdecls func =
           then List.append m [sl] else raise(Failure("MatrixLit has lists of uneven length"))
         | (hd :: _) :: _ ->
           if (List.length (List.hd m)) != (List.length sl)
-          then raise(Failure("MatrixLit has lists of uneven length"))
+          then raise(E.UnevenMatrix("MatrixLit has lists of uneven length"))
           else
           let t1 = sexpr_to_type hd in
           let t2 = sexpr_to_type (List.hd sl) in
@@ -192,7 +196,7 @@ let check_function globals fdecls func =
       in
     let sm = List.fold_left add_if_match_2 [] m in
     let t = sexpr_to_type(List.hd(List.hd sm)) in
-    if t != Int && t != Pixel then raise(Failure("MatrixLit must be of type Int or Pixel"))
+    if t != Int && t != Pixel then raise(E.InvalidMatrixType("MatrixLit must be of type Int or Pixel"))
     else SMatrixLit(sm, Matrix(t))
 
   and check_unop op e =
@@ -210,7 +214,7 @@ let check_function globals fdecls func =
     let lvaluet = type_of_identifier var in
     let se = expr_to_sexpr e in
     let rvaluet = sexpr_to_type se in
-    let err = (Failure("Illegal assignment trying to assign " ^ string_of_expr e ^ " to " ^ var ^ "\n" ^ string_of_typ lvaluet ^ " = " ^
+    let err = (E.IllegalAssignment("Illegal assignment trying to assign " ^ string_of_expr e ^ " to " ^ var ^ "\n" ^ string_of_typ lvaluet ^ " = " ^
       string_of_typ rvaluet ^ " in " ^ string_of_expr e)) in
     let _ = (match lvaluet with
       Matrix(lt) -> (match rvaluet with
@@ -249,7 +253,7 @@ let check_function globals fdecls func =
     let se = expr_to_sexpr e in
     let t = sexpr_to_type se in
     if t = func.typ then SReturn(se)
-    else raise (Failure ("return gives " ^ string_of_typ t ^ " expected " ^
+    else raise (Exceptions.InvalidReturnType ("return gives " ^ string_of_typ t ^ " expected " ^
                            string_of_typ func.typ ^ " in " ^ string_of_expr e))
 
   and check_if e s1 s2 =
@@ -258,14 +262,14 @@ let check_function globals fdecls func =
     let ss1 = stmt_to_sstmt s1 in
     let ss2 = stmt_to_sstmt s2 in
     if t = Bool then SIf(se, ss1, ss2)
-    else raise (Failure ("expected Boolean expression in " ^ string_of_expr e))
+    else raise (E.InvalidConditional ("expected Boolean expression in " ^ string_of_expr e))
 
   and check_while e s =
     let se = expr_to_sexpr e in
     let t = sexpr_to_type se in
     let ss = stmt_to_sstmt s in
     if t = Bool then SWhile(se, ss)
-    else raise (Failure ("expected Boolean expression in " ^ string_of_expr e))
+    else raise (E.InvalidConditional ("expected Boolean expression in " ^ string_of_expr e))
 
   and check_for e1 e2 e3 s =
     let se1 = expr_to_sexpr e1 in
@@ -274,7 +278,7 @@ let check_function globals fdecls func =
     let t = sexpr_to_type se2 in
     let ss = stmt_to_sstmt s in
     if t = Bool then SFor(se1, se2, se3, ss)
-    else raise (Failure ("expected Boolean expression in " ^ string_of_expr e2))
+    else raise (E.InvalidConditional ("expected Boolean expression in " ^ string_of_expr e2))
 
   and sexpr_to_type sexpr = match sexpr with
       SLiteral(_, typ)                 -> typ
