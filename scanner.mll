@@ -15,6 +15,8 @@ rule token = parse
 | ">>"     { RANGLE }
 | '|'      { BAR }
 | '~'      { TILDA }
+| "++"      { INCREMENT }
+| "--"      { DECREMENT }
 | ';'      { SEMI }
 | ','      { COMMA }
 | '+'      { PLUS }

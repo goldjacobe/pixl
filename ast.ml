@@ -3,7 +3,7 @@
 type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq | And | Or
 type field = Red | Blue | Green | Alpha 
 
-type uop = Neg | Not 
+type uop = Neg | Not | Increment | Decrement
 type flip = Bar | Underscore
 
 type typ = Int | Bool | Void | String | Float | Pixel | Char | File | Matrix of typ
@@ -70,6 +70,8 @@ let string_of_op = function
 let string_of_uop = function
     Neg -> "-"
   | Not -> "!"
+  | Increment -> "++"
+  | Decrement -> "--"
 
 let string_of_field = function
      Red -> "R"

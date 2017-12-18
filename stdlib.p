@@ -169,13 +169,7 @@ pixel addPixel(pixel p1, pixel p2) {
     p3.R = p1.R + p2.R;
     p3.G = p1.G + p2.G;
     p3.B = p1.B + p2.B;
-    
-    if (p1.A > p2.A) {
-        p3.A = p1.A;
-    }
-    else {
-        p3.A = p2.A;
-    }
+    p3.A = max(p1.A, p2.A);
 
     return p3;
 }
@@ -195,13 +189,7 @@ pixel subtractPixel(pixel p1, pixel p2) {
     p3.R = abs(p1.R - p2.R);
     p3.G = abs(p1.G - p2.G);
     p3.B = abs(p1.B - p2.B);
-    
-    if (p1.A > p2.A) {
-        p3.A = p1.A;
-    }
-    else {
-        p3.A = p2.A;
-    }
+    p3.A = max(p1.A, p2.A);
 
     return p3;
 }
@@ -345,4 +333,21 @@ pixel matrix enhanceBlueMatrix(pixel matrix m, int amount) {
     
     return pm;
 
+}
+
+int increment(int a) {
+    return a+1;
+}
+
+int decrement(int a) {
+    return a-1;
+}
+
+int max(int a, int b) {
+    if (a < b) {
+        return b;
+    }
+    else {
+        return a;
+    }
 }

@@ -201,6 +201,8 @@ let check_function globals fdecls func =
     (match op with
         Neg when t = Int -> SUnop(op, se, Int)
       | Not when t = Bool -> SUnop(op, se, Bool)
+      | Increment when t = Int -> SCall("increment",[se], Int)
+      | Decrement when t = Int -> SCall("decrement",[se], Int)
       | _ -> raise (Failure ("illegal unary operator " ^ string_of_uop op ^
           string_of_typ t ^ " in " ^ string_of_expr e)))
 
