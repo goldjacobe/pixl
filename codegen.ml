@@ -54,6 +54,11 @@ let translate (globals, functions) =
 
   let printbig_t = L.function_type i64_t [| i64_t |] in
   let printbig_func = L.declare_function "printbig" printbig_t the_module in
+  
+  let return_type = L.pointer_type(L.i64_type context) in
+  let read = L.var_arg_function_type return_type [| str_t |] in
+  let read_func = L.declare_function "read_img" read_img the_module in
+  
 
   (* declare read, which the read built-in function will call *)
   (*let read_t = L.var_arg_function_type str_t [| i32_t |] in
@@ -329,7 +334,7 @@ let translate (globals, functions) =
     let rec expr builder = function
       S.SLiteral (i, _) -> L.const_int i64_t i
       | S.SBoolLit (b, _) -> L.const_int i1_t (if b then 1 else 0)
-      | S.SStringLit (s, _) -> L.build_global_stringptr(s^"\x00") "strptr" builder
+      | S.SStringLit (s, _) -> L.build_global_stringptr(s) "strptr" builder
       | S.SNoexpr -> L.const_int i64_t 0
       | S.SEMatrix(rows,cols,typ) -> let rows = expr builder rows 
                                      and cols = expr builder cols in
@@ -572,7 +577,7 @@ let translate (globals, functions) =
           L.build_call printf_func [| str_format_str ; (expr builder e) |]
             "printf" builder
       | S.SCall ("printbig", [e], _) -> L.build_call printbig_func [| (expr builder e) |] "printbig" builder
-
+      | S.SCall ("read", [e], _) -> L.build_call read_func [| (expr builder e) |] "read" builder
 
       | S.SCall(f, act, _) ->
           let (fdef, fdecl) = StringMap.find f function_decls in
