@@ -66,6 +66,8 @@ char* str_of_int(long l) {
 }
 
 char* str_con(char* s1, char* s2) {
+    free(s1);
+    free(s2);
     char* out = malloc(strlen(s1) + strlen(s2) + 1);
     strcpy(out, s1);
     strcat(out, s2);
