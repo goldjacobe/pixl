@@ -126,7 +126,7 @@ let check_function globals fdecls func =
       | Equal | Neq when t1 = t2 -> SBinop(se1,op,se2,Bool)
       | Less | Leq | Greater | Geq when t1 = Int && t2 = Int -> SBinop(se1,op,se2,Bool)
       | And | Or when t1 = Bool && t2 = Bool -> SBinop(se1,op,se2,Bool)
-      | Add when t1 = String && t2 = String -> SBinop(se1,op,se2,String)
+      | Add when t1 = String && t2 = String -> SCall("str_con", [se1; se2], String)
       | Add when t1 = Pixel && t2 = Pixel -> SBinop(se1,op,se2,Pixel)
       | _ -> raise (Failure ("illegal binary operator " ^
           string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
@@ -277,7 +277,11 @@ let check_function globals fdecls func =
 let check (globals, functions) =
   let _ = report_duplicate (fun n -> "duplicate global " ^ n) (List.map snd globals) in
   let _ = check_binds (fun n -> "illegal void global" ^ n) globals in
-  let built_in_decls =  StringMap.add "write"
+  let built_in_decls = StringMap.add "str_con"
+    { typ = String; fname = "str_con"; formals = [(String, "s1"); (String, "s2")];
+      locals = []; body = [] } (StringMap.add "str_of_int"
+    { typ = String; fname = "str_of_int"; formals = [(Int, "i")];
+      locals = []; body = [] } (StringMap.add "write"
     { typ = Int; fname = "write"; formals = [(Matrix(Pixel), "m"); (String, "f"); (String, "e")];
       locals = []; body = [] } (StringMap.add "read"
     { typ = Matrix(Pixel); fname = "read"; formals = [(String, "f")];
@@ -285,7 +289,7 @@ let check (globals, functions) =
     { typ = Void; fname = "print"; formals = [(Int, "s")];
       locals = []; body = [] } (StringMap.singleton "prints"
      { typ = Void; fname = "print"; formals = [(String,"s")];
-       locals = []; body =  []  })))
+       locals = []; body =  []  })))))
   in
   let check_functions m fdecl =
     if StringMap.mem fdecl.fname m then
