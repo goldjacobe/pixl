@@ -162,6 +162,31 @@ bool pixelEquality(pixel p1, pixel p2) {
     }
 }
 
+bool pixelSimilarity(pixel p1, pixel p2) {
+    int diff;
+    diff = 30;
+    if ((absInt(p1.R - p2.R) < diff) && (absInt(p1.G - p2.G) < diff) && (absInt(p1.B - p2.B) < diff) && (absInt(p1.A - p2.A) < diff))
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+int absInt(int a)
+{
+    if (a < 0)
+    {
+        return -a;
+    }
+    else
+    {
+        return a;
+    }
+}
+
 pixel matrix matrixAnd(pixel matrix pm1, pixel matrix pm2) {
     int i;
     int j;
@@ -174,14 +199,14 @@ pixel matrix matrixAnd(pixel matrix pm1, pixel matrix pm2) {
     {
         for (j = 0; j < pm1.cols; j=j+1)
         {
-            if (pixelEquality(pm1[i][j], pm2[i][j]))
+            if (pixelSimilarity(pm1[i][j], pm2[i][j]))
             {
-                pm3[i][j] = pm1[i][j];
+                pm3[i][j] = (255,255,255,255);
             }
 
             else
             {
-                pm3[i][j] = (255,255,255,255);
+                pm3[i][j] = pm1[i][j];
             }
         }
     }
