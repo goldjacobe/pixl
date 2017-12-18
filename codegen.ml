@@ -55,9 +55,9 @@ let translate (globals, functions) =
   let return_type = L.pointer_type(L.i64_type context) in
   let read_img = L.var_arg_function_type return_type [| str_t |] in
   let read_img_func = L.declare_function "read_img" read_img the_module in
-  
+
   let arg1 = L.pointer_type(L.i64_type context) in
-  let write_img = L.var_arg_function_type i32_t [|arg1; str_t; str_t |] in
+  let write_img = L.var_arg_function_type i64_t [|arg1; str_t; str_t |] in
   let write_img_func = L.declare_function "write_img" write_img the_module in
 
 

@@ -21,7 +21,7 @@ unsigned long* read_img(char* filename) {
     return img;
 }
 
-int write_img(unsigned long* img, char* filename, char* extension) {
+long write_img(unsigned long* img, char* filename, char* extension) {
     int h = (int)(*img);
     int w = (int)(*(img + 1));
     unsigned long *data_start = img + 2;
