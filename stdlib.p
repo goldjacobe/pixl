@@ -24,6 +24,22 @@ int abs(int x) {
     }
 }
 
+pixel copyPixel(pixel p) {
+    int r;
+    int g;
+    int b;
+    int a;
+    pixel q;
+
+    r = p.R;
+    g = p.G;
+    b = p.B;
+    a = p.A;
+
+    q = (r, g, b, a);
+    return q;
+}
+
 pixel matrix cropPixelMatrix(pixel matrix pm, int r1, int r2, int c1, int c2) {
     int i;
     int j;
@@ -36,7 +52,7 @@ pixel matrix cropPixelMatrix(pixel matrix pm, int r1, int r2, int c1, int c2) {
     {
         for (j = c1; j < c2; j=j+1)
         {
-            pm2[i-r1][j-c1] = pm[i][j];
+            pm2[i-r1][j-c1] = copyPixel(pm[i][j]);
         }
     }
 
@@ -99,7 +115,7 @@ pixel matrix flipPixelMatrixH(pixel matrix pm) {
     {
         for (j = 0; j < width; j=j+1)
         {
-            pm2[i][j] = pm[i][width-1-j];
+            pm2[i][j] = copyPixel(pm[i][width-1-j]);
         }
     }
 
@@ -144,7 +160,7 @@ pixel matrix flipPixelMatrixV(pixel matrix pm) {
     {
         for (j = 0; j < height; j=j+1)
         {
-            pm2[j][i] = pm[height-1-j][i];
+            pm2[j][i] = copyPixel(pm[height-1-j][i]);
         }
     }
 
@@ -206,7 +222,7 @@ pixel matrix matrixAnd(pixel matrix pm1, pixel matrix pm2) {
 
             else
             {
-                pm3[i][j] = pm1[i][j];
+                pm3[i][j] = copyPixel(pm1[i][j]);
             }
         }
     }
@@ -355,14 +371,14 @@ pixel matrix enhanceRedMatrix(pixel matrix m, int amount) {
     {
         for (j = 0; j < m.cols; j=j+1)
         {
-            p = pm[i][j];
+            p = m[i][j];
             red = p.R;
             red = red + amount;
             p.R = red;
             pm[i][j] = p;
-        }   
+        }
     }
-    
+
     return pm;
 
 }
@@ -379,14 +395,14 @@ pixel matrix enhanceGreenMatrix(pixel matrix m, int amount) {
     {
         for (j = 0; j < m.cols; j=j+1)
         {
-            p = pm[i][j];
+            p = m[i][j];
             green = p.G;
             green = green + amount;
             p.G = green;
             pm[i][j] = p;
-        }   
+        }
     }
-    
+
     return pm;
 
 }
@@ -404,14 +420,14 @@ pixel matrix enhanceBlueMatrix(pixel matrix m, int amount) {
     {
         for (j = 0; j < m.cols; j=j+1)
         {
-            p = pm[i][j];
+            p = m[i][j];
             blue = p.B;
             blue = blue + amount;
             p.B = blue;
             pm[i][j] = p;
-        }   
+        }
     }
-    
+
     return pm;
 
 }

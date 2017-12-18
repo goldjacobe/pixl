@@ -50,7 +50,6 @@ long write_img(unsigned long* img, char* filename, char* extension) {
     } else {
         return 1;
     }
-    free(img);
     free(name);
     free(data);
     if (out) {
