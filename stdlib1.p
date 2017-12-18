@@ -9,9 +9,9 @@ pixel matrix flip_horizontal(pixel matrix pm) {
     pm2 = pm;
 
 
-    for (i = 0; i < height; i++)
+    for (i = 0; i < height; i=i+1)
     {
-        for (j = 0; j < width; j++)
+        for (j = 0; j < width; j=j+1)
         {
             pm2[i][j] = pm[i][width-1-j];
         }
@@ -31,9 +31,9 @@ pixel matrix flip_vertical(pixel matrix pm) {
     pm2 = pm;
 
 
-    for (i = 0; i < width; i++)
+    for (i = 0; i < width; i=i+1)
     {
-        for (j = 0; j < height; j++)
+        for (j = 0; j < height; j=j+1)
         {
             pm2[j][i] = pm[height-1-j][i];
         }
@@ -50,11 +50,11 @@ pixel matrix crop(pixel matrix pm, int r1, int r2, int c1, int c2) {
 
     pm2 = matrix(r2-r1, c2-c1, p);
 
-    for (i = r1; i < r2; i++)
+    for (i = r1; i < r2; i=i+1)
     {
-        for (j = c1; j < c2; j++)
+        for (j = c1; j < c2; j=j+1)
         {
-            pm2[i-r1][j-c1] = pm1[i][j];
+            pm2[i-r1][j-c1] = pm[i][j];
         }
     }
 
@@ -69,9 +69,9 @@ pixel matrix changeRed(pixel matrix pm, int change) {
 
     pm2 = pm;
 
-    for (i = 0; i < pm.rows; i++)
+    for (i = 0; i < pm.rows; i=i+1)
     {
-        for (j = 0; j < pm.cols; j++)
+        for (j = 0; j < pm.cols; j=j+1)
         {
             pR = pm[i][j];
             pR.R = pR.R + change;
@@ -90,9 +90,9 @@ pixel matrix changeGreen(pixel matrix pm, int change) {
 
     pm2 = pm;
 
-    for (i = 0; i < pm.rows; i++)
+    for (i = 0; i < pm.rows; i=i+1)
     {
-        for (j = 0; j < pm.cols; j++)
+        for (j = 0; j < pm.cols; j=j+1)
         {
             pG = pm[i][j];
             pG.G = pG.G + change;
@@ -111,9 +111,9 @@ pixel matrix changeBlue(pixel matrix pm, int change) {
 
     pm2 = pm;
 
-    for (i = 0; i < pm.rows; i++)
+    for (i = 0; i < pm.rows; i=i+1)
     {
-        for (j = 0; j < pm.cols; j++)
+        for (j = 0; j < pm.cols; j=j+1)
         {
             pB = pm[i][j];
             pB.B = pB.B + change;
@@ -132,9 +132,9 @@ pixel matrix changeAlpha(pixel matrix pm, int change) {
 
     pm2 = pm;
 
-    for (i = 0; i < pm.rows; i++)
+    for (i = 0; i < pm.rows; i=i+1)
     {
-        for (j = 0; j < pm.cols; j++)
+        for (j = 0; j < pm.cols; j=j+1)
         {
             pA = pm[i][j];
             pA.A = pA.A + change;
@@ -154,9 +154,9 @@ pixel matrix grayscale(pixel matrix pm) {
 
     pmGray = pm;
 
-    for (i = 0; i < pm.rows; i++)
+    for (i = 0; i < pm.rows; i=i+1)
     {
-        for (j = 0; j < pm.cols; j++)
+        for (j = 0; j < pm.cols; j=j+1)
         {
             p = pm[i][j];
             average = (p.R + p.G + p.B)/3;
@@ -186,9 +186,9 @@ pixel matrix subtraction(pixel matrix pm1, pixel matrix pm2) {
 
     pm3 = pm1;
 
-    for (i = 0; i < pm1.rows; i++)
+    for (i = 0; i < pm1.rows; i=i+1)
     {
-        for (j = 0; j < pm1.cols; j++)
+        for (j = 0; j < pm1.cols; j=j+1)
         {
             if (pixelEquality(pm1[i][j], pm2[i][j]))
             {
@@ -212,9 +212,9 @@ pixel matrix normalize(pixel matrix pm) {
     pixel matrix pm2;
     pm2 = pm;
 
-    for (i = 0; i < pm.rows; i++)
+    for (i = 0; i < pm.rows; i=i+1)
     {
-        for (j = 0; j < pm.cols; j++)
+        for (j = 0; j < pm.cols; j=j+1)
         {
             p = pm[i][j];
             if (p.R > 255) {
