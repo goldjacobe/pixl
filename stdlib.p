@@ -163,6 +163,22 @@ pixel matrix matrixAnd(pixel matrix pm1, pixel matrix pm2) {
     return pm3;
 }
 
+pixel addPixel(pixel p1, pixel p2) {
+    pixel p3;
+    p3 = (0,0,0,0);
+    p3.R = p1.R + p2.R;
+    p3.G = p1.G + p2.G;
+    p3.B = p1.B + p2.B;
+    
+    if (p1.A > p2.A) {
+        p3.A = p1.A;
+    }
+    else {
+        p3.A = p2.A;
+    }
+
+    return p3;
+}
 
 pixel matrix grayscale(pixel matrix pm) {
     int i;
@@ -187,9 +203,60 @@ pixel matrix grayscale(pixel matrix pm) {
 }
 
 
+int abs(int x) {
+    if (x > 0) {
+        return x;
+    }
+    else {
+        return -x;
+    }
+}
 
+pixel subtractPixel(pixel p1, pixel p2) {
+    pixel p3;
+    p3 = (0,0,0,0);
+    p3.R = abs(p1.R - p2.R);
+    p3.G = abs(p1.G - p2.G);
+    p3.B = abs(p1.B - p2.B);
+    
+    if (p1.A > p2.A) {
+        p3.A = p1.A;
+    }
+    else {
+        p3.A = p2.A;
+    }
 
+    return p3;
+}
 
+int matrix addIntMatrix(int matrix a, int matrix b) {
+    int matrix m;
+    int i;
+    int j;
+    m=a;
+    for (i = 0; i < a.rows; i=i+1)
+    {
+        for (j = 0; j < a.cols; j=j+1)
+        {
+            m[i][j] = a[i][j] + b[i][j];
+        }
+    }
 
+    return m;
+}
 
+int matrix subtractIntMatrix(int matrix a, int matrix b) {
+    int matrix m;
+    int i;
+    int j;
+    m=a;
+    for (i = 0; i < a.rows; i=i+1)
+    {
+        for (j = 0; j < a.cols; j=j+1)
+        {
+            m[i][j] = a[i][j] - b[i][j];
+        }
+    }
 
+    return m;
+}

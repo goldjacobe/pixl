@@ -50,7 +50,7 @@ let check_function globals fdecls func =
     | MatrixLit m             -> (check_matrix m)
     | Id s                    -> SId(s, type_of_identifier s)
     | StringLit s             -> SStringLit(s, String)
-    | Access(v,e)             -> (check_access v e) (*TODO*)
+    | Access(v,f)             -> (check_access v f) (*TODO*)
     | Binop(e1, op, e2)       -> (check_binop e1 op e2)
     | Unop(op, e)             -> (check_unop op e)
     | Noexpr                  -> SNoexpr
@@ -62,8 +62,26 @@ let check_function globals fdecls func =
     | MatrixAccess(var,e1,e2) -> (check_matrix_access e var e1 e2)
     | Rows(var)               -> SRows(var)
     | EMatrix(e1,e2,e3)       -> (check_empty_matrix e1 e2 e3)
+    | HFlip(e)                -> (check_h_flip e)
+    | VFlip(e)                -> (check_v_flip e)
     | Cols(var)               -> SCols(var)
   )
+
+  and check_h_flip e =
+    let se = expr_to_sexpr e in
+    let tp = sexpr_to_type se in
+    (match tp with 
+      Matrix(Pixel) -> SCall("flipPixelMatrixH", [se], Matrix(Pixel))
+      | Matrix(Int) -> SCall("flipIntMatrixH", [se], Matrix(Int))
+    )
+  
+  and check_v_flip e =
+    let se = expr_to_sexpr e in
+    let tp = sexpr_to_type se in
+    (match tp with 
+      Matrix(Pixel) -> SCall("flipPixelMatrixV", [se], Matrix(Pixel))
+      | Matrix(Int) -> SCall("flipIntMatrixV", [se], Matrix(Int))
+    )
 
   and check_empty_matrix e1 e2 tp =
   let se1 = expr_to_sexpr e1 in
@@ -81,7 +99,8 @@ let check_function globals fdecls func =
   and check_assign_pixel var field exp =
     let sexp = expr_to_sexpr exp in
     let tp = sexpr_to_type sexp in
-    if tp != Int then raise(Failure("Pixel reassignment requires an Int value"))
+    if type_of_identifier var != Pixel then raise(Failure("Trying to assign to a pixel but found a " ^ string_of_typ (type_of_identifier var)))
+    else if tp != Int then raise(Failure("Pixel reassignment requires an Int value"))
     else SAssignp(var,field,sexp,Int)
 
   and check_assign_matrix var e1 e2 e3 =
@@ -92,9 +111,17 @@ let check_function globals fdecls func =
     SAssignm(var,se1,se2,se3,tp)
 
   and check_crop var r0 r1 c0 c1 =
-    if (r1 <= r0) then raise (Failure("Max row must be greater than or equal to min row."))
-    else if (c1 <= r0) then raise (Failure("Max column must be greater than or equal to min column."))
-    else SCrop(var, expr_to_sexpr r0, expr_to_sexpr r1, expr_to_sexpr c0, expr_to_sexpr r1, type_of_identifier var)
+    let svar = SId(var, type_of_identifier var) in
+    let sr0 = expr_to_sexpr r0 in
+    let sr1 = expr_to_sexpr r1 in
+    let sc0 = expr_to_sexpr c0 in
+    let sc1 = expr_to_sexpr c1 in
+    if (r1 < r0) then raise (Failure("Max row must be greater than or equal to min row."))
+    else if (c1 < c1) then raise (Failure("Max column must be greater than or equal to min column."))
+    else (match (type_of_identifier var) with 
+      Matrix(Pixel) -> SCall("cropPixelMatrix", [svar; sr0; sr1; sc0; sc1], Matrix(Pixel))
+      | Matrix(Int) -> SCall("cropIntMatrix", [svar; sr0; sr1; sc0; sc1], Matrix(Int))
+    )
 
   and check_call fname actuals =
     let rec helper = function
@@ -113,8 +140,9 @@ let check_function globals fdecls func =
     let sactuals = helper (formals, actuals) in
     SCall(fname, sactuals, fd.typ)
 
-  and check_access var uop =
-    SAccess(var,uop,Int)
+  and check_access var f =
+    if (type_of_identifier var = Pixel) then SAccess(var,f,Int)
+    else raise(Failure("Cannot call field functions (R/G/B/A) on non-Pixel variables"))
 
   and check_binop e1 op e2 =
     let se1 = expr_to_sexpr e1 in
@@ -127,7 +155,11 @@ let check_function globals fdecls func =
       | Less | Leq | Greater | Geq when t1 = Int && t2 = Int -> SBinop(se1,op,se2,Bool)
       | And | Or when t1 = Bool && t2 = Bool -> SBinop(se1,op,se2,Bool)
       | Add when t1 = String && t2 = String -> SBinop(se1,op,se2,String)
-      | Add when t1 = Pixel && t2 = Pixel -> SBinop(se1,op,se2,Pixel)
+      | Add when t1 = Pixel && t2 = Pixel -> SCall("addPixel", [se1;se2], Pixel)
+      | Sub when t1 = Pixel && t2 = Pixel -> SCall("subtractPixel", [se1;se2], Pixel)
+      | Add when t1 = Matrix(Int) && t2 = Matrix(Int) -> SCall("addIntMatrix", [se1;se2], Matrix(Int))
+      | Sub when t1 = Matrix(Int) && t2 = Matrix(Int) -> SCall("subtractIntMatrix", [se1;se2], Matrix(Int))
+      | And when t1 = Matrix(Pixel) && t2 = Matrix(Pixel) -> SCall("matrixAnd", [se1;se2], Matrix(Pixel))
       | _ -> raise (Failure ("illegal binary operator " ^
           string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
           string_of_typ t2 ^ " in " ^ string_of_expr e1 ^ string_of_op op ^ string_of_expr e2))
@@ -176,7 +208,7 @@ let check_function globals fdecls func =
     let lvaluet = type_of_identifier var in
     let se = expr_to_sexpr e in
     let rvaluet = sexpr_to_type se in
-    let err = (Failure("Illegal assignment: " ^ string_of_typ lvaluet ^ " = " ^
+    let err = (Failure("Illegal assignment trying to assign " ^ string_of_expr e ^ " to " ^ var ^ "\n" ^ string_of_typ lvaluet ^ " = " ^
       string_of_typ rvaluet ^ " in " ^ string_of_expr e)) in
     let _ = (match lvaluet with
       Matrix(lt) -> (match rvaluet with
