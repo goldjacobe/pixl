@@ -237,3 +237,112 @@ int matrix subtractIntMatrix(int matrix a, int matrix b) {
 
     return m;
 }
+
+pixel enhanceRed(pixel p, int amount) {
+  int currentRed;
+  int newRed;
+  currentRed = p.R;
+  newRed = currentRed + amount;
+  if (newRed >= 255) {
+      newRed = 255;
+  }
+  p.R = newRed;
+  return p;
+}
+
+pixel enhanceGreen(pixel p, int amount) {
+  int currentGreen;
+  int newGreen;
+  currentGreen = p.G;
+  newGreen = currentGreen + amount;
+  if (newGreen >= 255) {
+      newGreen = 255;
+  }
+  p.G = newGreen;
+  return p;
+}
+
+pixel enhanceBlue(pixel p, int amount) {
+  int currentBlue;
+  int newBlue;
+  currentBlue = p.B;
+  newBlue = currentBlue + amount;
+  if (newBlue >= 255) {
+      newBlue = 255;
+  }
+  p.B = newBlue;
+  return p;
+}
+
+pixel matrix enhanceRedMatrix(pixel matrix m, int amount) {
+    int i;
+    int j;
+    pixel p;
+    int red;
+    pixel matrix pm;
+    pm = m;
+
+    for (i = 0; i < m.rows; i=i+1)
+    {
+        for (j = 0; j < m.cols; j=j+1)
+        {
+            p = pm[i][j];
+            red = p.R;
+            red = red + amount;
+            p.R = red;
+            pm[i][j] = p;
+        }   
+    }
+    
+    return pm;
+
+}
+
+pixel matrix enhanceGreenMatrix(pixel matrix m, int amount) {
+    int i;
+    int j;
+    pixel p;
+    int green;
+    pixel matrix pm;
+    pm = m;
+
+    for (i = 0; i < m.rows; i=i+1)
+    {
+        for (j = 0; j < m.cols; j=j+1)
+        {
+            p = pm[i][j];
+            green = p.G;
+            green = green + amount;
+            p.G = green;
+            pm[i][j] = p;
+        }   
+    }
+    
+    return pm;
+
+}
+
+
+pixel matrix enhanceBlueMatrix(pixel matrix m, int amount) {
+    int i;
+    int j;
+    pixel p;
+    int blue;
+    pixel matrix pm;
+    pm = m;
+
+    for (i = 0; i < m.rows; i=i+1)
+    {
+        for (j = 0; j < m.cols; j=j+1)
+        {
+            p = pm[i][j];
+            blue = p.B;
+            blue = blue + amount;
+            p.B = blue;
+            pm[i][j] = p;
+        }   
+    }
+    
+    return pm;
+
+}
