@@ -5,3 +5,4 @@ int main() {
     new = |m;
 
     print(new[0][0]);
+}
