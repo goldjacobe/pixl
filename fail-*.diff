@@ -1,5 +1,0 @@
-1c1
-< Fatal error: exception Exceptions.UnevenMatrix("MatrixLit has lists of uneven length")
----
-> Fatal error: exception Failure("MatrixLit has lists of uneven length")
-\ No newline at end of file

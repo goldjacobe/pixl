@@ -6,3 +6,7 @@ pixl.native
 *.o
 *.diff
 *.exe
+*.ll
+*.s
+*.diff
+
