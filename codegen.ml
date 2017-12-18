@@ -331,6 +331,30 @@ let translate (globals, functions) =
       | S.SBoolLit (b, _) -> L.const_int i1_t (if b then 1 else 0)
       | S.SStringLit (s, _) -> L.build_global_stringptr(s^"\x00") "strptr" builder
       | S.SNoexpr -> L.const_int i64_t 0
+      | S.SEMatrix(rows,cols,typ) -> let rows = expr builder rows 
+                                     and cols = expr builder cols in
+                                     (match typ with
+                                     A.Matrix(A.Int) -> let left = L.build_mul cols rows "left" builder in
+                                                        let mat = L.build_add left (L.const_int i64_t 2) "mat" builder in
+                                                        let size = mat in
+                                                        let typ = L.pointer_type i64_t in
+                                                        let arr = L.build_array_malloc typ size "matrix1" builder in
+                                                        let arr = L.build_pointercast arr typ "matrix2" builder in
+                                                        let arr_ptr = L.build_gep arr [|L.const_int i64_t 0|] "pixel3" builder in ignore(L.build_store (rows) arr_ptr builder);
+                                                        let arr_ptr = L.build_gep arr [|L.const_int i64_t 1|] "pixel3" builder in ignore(L.build_store (cols) arr_ptr builder);
+                                                        arr
+
+                                     | A.Matrix (A.Pixel) -> let left = L.build_mul cols rows "left" builder in
+                                                        let left = L.build_mul left (L.const_int i64_t 4) "left" builder in
+                                                        let mat = L.build_add left (L.const_int i64_t 2) "mat" builder in
+                                                        let size = mat in
+                                                        let typ = L.pointer_type i64_t in
+                                                        let arr = L.build_array_malloc typ size "matrix1" builder in
+                                                        let arr = L.build_pointercast arr typ "matrix2" builder in
+                                                        let arr_ptr = L.build_gep arr [|L.const_int i64_t 0|] "pixel3" builder in ignore(L.build_store (rows) arr_ptr builder);
+                                                        let arr_ptr = L.build_gep arr [|L.const_int i64_t 1|] "pixel3" builder in ignore(L.build_store (cols) arr_ptr builder);
+                                                        arr)
+
       | S.SAssignm(id, exp1, exp2, value, typ) -> let arr =  L.build_load (lookup id) id builder 
                                              and value = expr builder value in
                                              (match typ with
@@ -348,7 +372,7 @@ let translate (globals, functions) =
                                                         let num2 = L.build_load pointer2 "Access3" builder in
                                                         let pointer3 = L.build_gep value [|L.const_int i64_t 2|] "matrix8" builder in
                                                         let num3 = L.build_load pointer3 "Access3" builder in
-                                                        let pointer4 = L.build_gep arr [|L.const_int i64_t 3|] "matrix8" builder in
+                                                        let pointer4 = L.build_gep value [|L.const_int i64_t 3|] "matrix8" builder in
                                                         let num4 = L.build_load pointer4 "Access3" builder in
                                                         let arr_ptr = L.build_gep arr [|loc|] "pixel3" builder in ignore(L.build_store (num1) arr_ptr builder);
                                                         let arr_ptr = L.build_gep arr [|L.build_add loc (L.const_int i64_t 1) "add1" builder|] "pixel4" builder in ignore(L.build_store (num2) arr_ptr builder);
@@ -408,7 +432,7 @@ let translate (globals, functions) =
       | S.SMatrixLit(li, typ) -> (match typ with
                            A.Matrix(A.Pixel) -> let rows = List.length li in
                            let columns = List.length (List.hd li) in
-                           let mat = 4 * (rows * columns + 2) in
+                           let mat = (4 * rows * columns) + 2 in
                            let size = L.const_int i64_t mat in
                            let typ = L.pointer_type i64_t in
                            let arr = L.build_array_malloc typ size "matrix1" builder in
