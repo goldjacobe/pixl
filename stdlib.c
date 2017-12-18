@@ -48,10 +48,8 @@ long write_img(unsigned long* img, char* filename, char* extension) {
     } else if (!strcmp(extension, "jpg")) {
         out = stbi_write_jpg(name, w, h, 4, data, 100);
     } else {
-        printf("hi\n");
         return 1;
     }
-    printf("%d\n", out);
     free(name);
     free(data);
     if (out) {
