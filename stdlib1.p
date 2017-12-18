@@ -8,7 +8,6 @@ pixel matrix flip_horizontal(pixel matrix pm) {
 
     pm2 = pm;
 
-
     for (i = 0; i < height; i=i+1) {
         for (j = 0; j < width; j=j+1) {
             pm2[i][j] = pm[i][width-1-j];
@@ -26,7 +25,6 @@ pixel matrix flip_vertical(pixel matrix pm) {
     width = pm.cols;
 
     pm2 = pm;
-
 
     for (i = 0; i < width; i=i+1) {
         for (j = 0; j < height; j=j+1) {
@@ -144,6 +142,7 @@ pixel matrix grayscale(pixel matrix pm) {
 }
 
 bool pixelEquality(pixel p1, pixel p2) {
+
     if ((p1.R == p2.R) && (p1.G == p2.G) && (p1.B == p2.B) && (p1.A == p2.A)){
         return true;
     }
@@ -157,7 +156,6 @@ pixel matrix subtraction(pixel matrix pm1, pixel matrix pm2) {
     int j;
 
     pixel matrix pm3;
-
     pm3 = pm1;
 
     for (i = 0; i < pm1.rows; i=i+1) {
