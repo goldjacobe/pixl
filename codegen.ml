@@ -57,7 +57,7 @@ let translate (globals, functions) =
   
   let return_type = L.pointer_type(L.i64_type context) in
   let read = L.var_arg_function_type return_type [| str_t |] in
-  let read_func = L.declare_function "read_img" read_img the_module in
+  let read_func = L.declare_function "read_img" read the_module in
   
 
   (* declare read, which the read built-in function will call *)
