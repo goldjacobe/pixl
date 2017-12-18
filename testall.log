@@ -1,0 +1,332 @@
+/usr/local/opt/llvm/bin/lli
+
+###### Testing test-addIntMatrix
+./pixl.native < tests/test-addIntMatrix.p > test-addIntMatrix.ll
+llc test-addIntMatrix.ll > test-addIntMatrix.s
+cc -o test-addIntMatrix.exe test-addIntMatrix.s
+./test-addIntMatrix.exe
+diff -b test-addIntMatrix.out tests/test-addIntMatrix.out > test-addIntMatrix.diff
+###### SUCCESS
+
+###### Testing test-addPixel
+./pixl.native < tests/test-addPixel.p > test-addPixel.ll
+llc test-addPixel.ll > test-addPixel.s
+cc -o test-addPixel.exe test-addPixel.s
+./test-addPixel.exe
+diff -b test-addPixel.out tests/test-addPixel.out > test-addPixel.diff
+###### SUCCESS
+
+###### Testing test-andMatrix
+./pixl.native < tests/test-andMatrix.p > test-andMatrix.ll
+llc test-andMatrix.ll > test-andMatrix.s
+cc -o test-andMatrix.exe test-andMatrix.s
+./test-andMatrix.exe
+diff -b test-andMatrix.out tests/test-andMatrix.out > test-andMatrix.diff
+###### SUCCESS
+
+###### Testing test-assignPixel1
+./pixl.native < tests/test-assignPixel1.p > test-assignPixel1.ll
+llc test-assignPixel1.ll > test-assignPixel1.s
+cc -o test-assignPixel1.exe test-assignPixel1.s
+./test-assignPixel1.exe
+diff -b test-assignPixel1.out tests/test-assignPixel1.out > test-assignPixel1.diff
+###### SUCCESS
+
+###### Testing test-assignPixel2
+./pixl.native < tests/test-assignPixel2.p > test-assignPixel2.ll
+llc test-assignPixel2.ll > test-assignPixel2.s
+cc -o test-assignPixel2.exe test-assignPixel2.s
+./test-assignPixel2.exe
+diff -b test-assignPixel2.out tests/test-assignPixel2.out > test-assignPixel2.diff
+###### SUCCESS
+
+###### Testing test-crIntMatrix.p
+./pixl.native < tests/test-cropIntMatrix.p > test-crIntMatrix.p.ll
+llc test-crIntMatrix.p.ll > test-crIntMatrix.p.s
+cc -o test-crIntMatrix.p.exe test-crIntMatrix.p.s
+./test-crIntMatrix.p.exe
+diff -b test-crIntMatrix.p.out tests/test-cropIntMatrix.out > test-crIntMatrix.p.diff
+###### SUCCESS
+
+###### Testing test-crIntMatrix2.p
+./pixl.native < tests/test-cropIntMatrix2.p > test-crIntMatrix2.p.ll
+llc test-crIntMatrix2.p.ll > test-crIntMatrix2.p.s
+cc -o test-crIntMatrix2.p.exe test-crIntMatrix2.p.s
+./test-crIntMatrix2.p.exe
+diff -b test-crIntMatrix2.p.out tests/test-cropIntMatrix2.out > test-crIntMatrix2.p.diff
+###### SUCCESS
+
+###### Testing test-crPixelMatrix.p
+./pixl.native < tests/test-cropPixelMatrix.p > test-crPixelMatrix.p.ll
+llc test-crPixelMatrix.p.ll > test-crPixelMatrix.p.s
+cc -o test-crPixelMatrix.p.exe test-crPixelMatrix.p.s
+./test-crPixelMatrix.p.exe
+diff -b test-crPixelMatrix.p.out tests/test-cropPixelMatrix.out > test-crPixelMatrix.p.diff
+###### SUCCESS
+
+###### Testing test-crPixelMatrix2.p
+./pixl.native < tests/test-cropPixelMatrix2.p > test-crPixelMatrix2.p.ll
+llc test-crPixelMatrix2.p.ll > test-crPixelMatrix2.p.s
+cc -o test-crPixelMatrix2.p.exe test-crPixelMatrix2.p.s
+./test-crPixelMatrix2.p.exe
+diff -b test-crPixelMatrix2.p.out tests/test-cropPixelMatrix2.out > test-crPixelMatrix2.p.diff
+###### SUCCESS
+
+###### Testing test-declarePixel1
+./pixl.native < tests/test-declarePixel1.p > test-declarePixel1.ll
+llc test-declarePixel1.ll > test-declarePixel1.s
+cc -o test-declarePixel1.exe test-declarePixel1.s
+./test-declarePixel1.exe
+diff -b test-declarePixel1.out tests/test-declarePixel1.out > test-declarePixel1.diff
+###### SUCCESS
+
+###### Testing test-decrementerator.p
+./pixl.native < tests/test-decrementOperator.p > test-decrementerator.p.ll
+llc test-decrementerator.p.ll > test-decrementerator.p.s
+cc -o test-decrementerator.p.exe test-decrementerator.p.s
+./test-decrementerator.p.exe
+diff -b test-decrementerator.p.out tests/test-decrementOperator.out > test-decrementerator.p.diff
+###### SUCCESS
+
+###### Testing test-etyMatrix.p
+./pixl.native < tests/test-emptyMatrix.p > test-etyMatrix.p.ll
+llc test-etyMatrix.p.ll > test-etyMatrix.p.s
+cc -o test-etyMatrix.p.exe test-etyMatrix.p.s
+./test-etyMatrix.p.exe
+diff -b test-etyMatrix.p.out tests/test-emptyMatrix.out > test-etyMatrix.p.diff
+###### SUCCESS
+
+###### Testing test-enhanceRed
+./pixl.native < tests/test-enhanceRed.p > test-enhanceRed.ll
+llc test-enhanceRed.ll > test-enhanceRed.s
+cc -o test-enhanceRed.exe test-enhanceRed.s
+./test-enhanceRed.exe
+diff -b test-enhanceRed.out tests/test-enhanceRed.out > test-enhanceRed.diff
+###### SUCCESS
+
+###### Testing test-enhanceRedMatrix
+./pixl.native < tests/test-enhanceRedMatrix.p > test-enhanceRedMatrix.ll
+llc test-enhanceRedMatrix.ll > test-enhanceRedMatrix.s
+cc -o test-enhanceRedMatrix.exe test-enhanceRedMatrix.s
+./test-enhanceRedMatrix.exe
+diff -b test-enhanceRedMatrix.out tests/test-enhanceRedMatrix.out > test-enhanceRedMatrix.diff
+###### SUCCESS
+
+###### Testing test-flIntMatrix.p
+./pixl.native < tests/test-flipIntMatrix.p > test-flIntMatrix.p.ll
+llc test-flIntMatrix.p.ll > test-flIntMatrix.p.s
+cc -o test-flIntMatrix.p.exe test-flIntMatrix.p.s
+./test-flIntMatrix.p.exe
+diff -b test-flIntMatrix.p.out tests/test-flipIntMatrix.out > test-flIntMatrix.p.diff
+###### SUCCESS
+
+###### Testing test-flIntMatrix2.p
+./pixl.native < tests/test-flipIntMatrix2.p > test-flIntMatrix2.p.ll
+llc test-flIntMatrix2.p.ll > test-flIntMatrix2.p.s
+cc -o test-flIntMatrix2.p.exe test-flIntMatrix2.p.s
+./test-flIntMatrix2.p.exe
+diff -b test-flIntMatrix2.p.out tests/test-flipIntMatrix2.out > test-flIntMatrix2.p.diff
+###### SUCCESS
+
+###### Testing test-flIntMatrixV.p
+./pixl.native < tests/test-flipIntMatrixV.p > test-flIntMatrixV.p.ll
+llc test-flIntMatrixV.p.ll > test-flIntMatrixV.p.s
+cc -o test-flIntMatrixV.p.exe test-flIntMatrixV.p.s
+./test-flIntMatrixV.p.exe
+diff -b test-flIntMatrixV.p.out tests/test-flipIntMatrixV.out > test-flIntMatrixV.p.diff
+###### SUCCESS
+
+###### Testing test-flIntMatrixV2.p
+./pixl.native < tests/test-flipIntMatrixV2.p > test-flIntMatrixV2.p.ll
+llc test-flIntMatrixV2.p.ll > test-flIntMatrixV2.p.s
+cc -o test-flIntMatrixV2.p.exe test-flIntMatrixV2.p.s
+./test-flIntMatrixV2.p.exe
+diff -b test-flIntMatrixV2.p.out tests/test-flipIntMatrixV2.out > test-flIntMatrixV2.p.diff
+###### SUCCESS
+
+###### Testing test-flPixelMatrix.p
+./pixl.native < tests/test-flipPixelMatrix.p > test-flPixelMatrix.p.ll
+llc test-flPixelMatrix.p.ll > test-flPixelMatrix.p.s
+cc -o test-flPixelMatrix.p.exe test-flPixelMatrix.p.s
+./test-flPixelMatrix.p.exe
+diff -b test-flPixelMatrix.p.out tests/test-flipPixelMatrix.out > test-flPixelMatrix.p.diff
+###### SUCCESS
+
+###### Testing test-flPixelMatrix2.p
+./pixl.native < tests/test-flipPixelMatrix2.p > test-flPixelMatrix2.p.ll
+llc test-flPixelMatrix2.p.ll > test-flPixelMatrix2.p.s
+cc -o test-flPixelMatrix2.p.exe test-flPixelMatrix2.p.s
+./test-flPixelMatrix2.p.exe
+diff -b test-flPixelMatrix2.p.out tests/test-flipPixelMatrix2.out > test-flPixelMatrix2.p.diff
+###### SUCCESS
+
+###### Testing test-flPixelMatrixV.p
+./pixl.native < tests/test-flipPixelMatrixV.p > test-flPixelMatrixV.p.ll
+llc test-flPixelMatrixV.p.ll > test-flPixelMatrixV.p.s
+cc -o test-flPixelMatrixV.p.exe test-flPixelMatrixV.p.s
+./test-flPixelMatrixV.p.exe
+diff -b test-flPixelMatrixV.p.out tests/test-flipPixelMatrixV.out > test-flPixelMatrixV.p.diff
+###### SUCCESS
+
+###### Testing test-for
+./pixl.native < tests/test-for.p > test-for.ll
+llc test-for.ll > test-for.s
+cc -o test-for.exe test-for.s
+./test-for.exe
+diff -b test-for.out tests/test-for.out > test-for.diff
+###### SUCCESS
+
+###### Testing test-helloworld
+./pixl.native < tests/test-helloworld.p > test-helloworld.ll
+llc test-helloworld.ll > test-helloworld.s
+cc -o test-helloworld.exe test-helloworld.s
+./test-helloworld.exe
+diff -b test-helloworld.out tests/test-helloworld.out > test-helloworld.diff
+###### SUCCESS
+
+###### Testing test-increment
+./pixl.native < tests/test-increment.p > test-increment.ll
+llc test-increment.ll > test-increment.s
+cc -o test-increment.exe test-increment.s
+./test-increment.exe
+diff -b test-increment.out tests/test-increment.out > test-increment.diff
+###### SUCCESS
+
+###### Testing test-incrementerator.p
+./pixl.native < tests/test-incrementOperator.p > test-incrementerator.p.ll
+llc test-incrementerator.p.ll > test-incrementerator.p.s
+cc -o test-incrementerator.p.exe test-incrementerator.p.s
+./test-incrementerator.p.exe
+diff -b test-incrementerator.p.out tests/test-incrementOperator.out > test-incrementerator.p.diff
+###### SUCCESS
+
+###### Testing test-matrixAccess
+./pixl.native < tests/test-matrixAccess.p > test-matrixAccess.ll
+llc test-matrixAccess.ll > test-matrixAccess.s
+cc -o test-matrixAccess.exe test-matrixAccess.s
+./test-matrixAccess.exe
+diff -b test-matrixAccess.out tests/test-matrixAccess.out > test-matrixAccess.diff
+###### SUCCESS
+
+###### Testing test-matrixLit
+./pixl.native < tests/test-matrixLit.p > test-matrixLit.ll
+llc test-matrixLit.ll > test-matrixLit.s
+cc -o test-matrixLit.exe test-matrixLit.s
+./test-matrixLit.exe
+diff -b test-matrixLit.out tests/test-matrixLit.out > test-matrixLit.diff
+###### SUCCESS
+
+###### Testing test-matrixRead
+./pixl.native < tests/test-matrixRead.p > test-matrixRead.ll
+llc test-matrixRead.ll > test-matrixRead.s
+cc -o test-matrixRead.exe test-matrixRead.s
+Undefined symbols for architecture x86_64:
+  "_read_img", referenced from:
+      _main in test-matrixRead-ce841c.o
+ld: symbol(s) not found for architecture x86_64
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+###### FAILED
+
+###### Testing test-matrixReassign
+./pixl.native < tests/test-matrixReassign.p > test-matrixReassign.ll
+llc test-matrixReassign.ll > test-matrixReassign.s
+cc -o test-matrixReassign.exe test-matrixReassign.s
+./test-matrixReassign.exe
+diff -b test-matrixReassign.out tests/test-matrixReassign.out > test-matrixReassign.diff
+###### SUCCESS
+
+###### Testing test-matrixWrite
+./pixl.native < tests/test-matrixWrite.p > test-matrixWrite.ll
+llc test-matrixWrite.ll > test-matrixWrite.s
+cc -o test-matrixWrite.exe test-matrixWrite.s
+Undefined symbols for architecture x86_64:
+  "_read_img", referenced from:
+      _main in test-matrixWrite-a3525d.o
+  "_write_img", referenced from:
+      _main in test-matrixWrite-a3525d.o
+ld: symbol(s) not found for architecture x86_64
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+###### FAILED
+
+###### Testing testixelAccess.p
+./pixl.native < tests/test-pixelAccess.p > testixelAccess.p.ll
+llc testixelAccess.p.ll > testixelAccess.p.s
+cc -o testixelAccess.p.exe testixelAccess.p.s
+./testixelAccess.p.exe
+diff -b testixelAccess.p.out tests/test-pixelAccess.out > testixelAccess.p.diff
+###### SUCCESS
+
+###### Testing testixelLit1.p
+./pixl.native < tests/test-pixelLit1.p > testixelLit1.p.ll
+llc testixelLit1.p.ll > testixelLit1.p.s
+cc -o testixelLit1.p.exe testixelLit1.p.s
+./testixelLit1.p.exe
+diff -b testixelLit1.p.out tests/test-pixelLit1.out > testixelLit1.p.diff
+###### SUCCESS
+
+###### Testing testixelReassignment.p
+./pixl.native < tests/test-pixelReassignment.p > testixelReassignment.p.ll
+llc testixelReassignment.p.ll > testixelReassignment.p.s
+cc -o testixelReassignment.p.exe testixelReassignment.p.s
+./testixelReassignment.p.exe
+diff -b testixelReassignment.p.out tests/test-pixelReassignment.out > testixelReassignment.p.diff
+###### SUCCESS
+
+###### Testing testrintInt.p
+./pixl.native < tests/test-printInt.p > testrintInt.p.ll
+llc testrintInt.p.ll > testrintInt.p.s
+cc -o testrintInt.p.exe testrintInt.p.s
+./testrintInt.p.exe
+diff -b testrintInt.p.out tests/test-printInt.out > testrintInt.p.diff
+###### SUCCESS
+
+###### Testing test-returnX
+./pixl.native < tests/test-returnX.p > test-returnX.ll
+llc test-returnX.ll > test-returnX.s
+cc -o test-returnX.exe test-returnX.s
+./test-returnX.exe
+###### FAILED
+
+###### Testing test-rows
+./pixl.native < tests/test-rows.p > test-rows.ll
+llc test-rows.ll > test-rows.s
+cc -o test-rows.exe test-rows.s
+./test-rows.exe
+diff -b test-rows.out tests/test-rows.out > test-rows.diff
+###### SUCCESS
+
+###### Testing test-stringCat
+./pixl.native < tests/test-stringCat.p > test-stringCat.ll
+llc test-stringCat.ll > test-stringCat.s
+cc -o test-stringCat.exe test-stringCat.s
+Undefined symbols for architecture x86_64:
+  "_str_con", referenced from:
+      _main in test-stringCat-35408d.o
+  "_str_of_int", referenced from:
+      _main in test-stringCat-35408d.o
+ld: symbol(s) not found for architecture x86_64
+clang: error: linker command failed with exit code 1 (use -v to see invocation)
+###### FAILED
+
+###### Testing test-subtractIntMatrix
+./pixl.native < tests/test-subtractIntMatrix.p > test-subtractIntMatrix.ll
+llc test-subtractIntMatrix.ll > test-subtractIntMatrix.s
+cc -o test-subtractIntMatrix.exe test-subtractIntMatrix.s
+./test-subtractIntMatrix.exe
+diff -b test-subtractIntMatrix.out tests/test-subtractIntMatrix.out > test-subtractIntMatrix.diff
+###### SUCCESS
+
+###### Testing test-subtractPixel
+./pixl.native < tests/test-subtractPixel.p > test-subtractPixel.ll
+llc test-subtractPixel.ll > test-subtractPixel.s
+cc -o test-subtractPixel.exe test-subtractPixel.s
+./test-subtractPixel.exe
+diff -b test-subtractPixel.out tests/test-subtractPixel.out > test-subtractPixel.diff
+###### SUCCESS
+
+###### Testing fail-*
+./pixl.native < tests/fail-*.p 2> fail-inconsistentMatrix.err >> testall.log
+./testall.sh: line 73: tests/fail-*.p: No such file or directory
+diff -b fail-inconsistentMatrix.err tests/fail-inconsistentMatrix.err > fail-*.diff
+FAILED fail-inconsistentMatrix.err differs from tests/fail-inconsistentMatrix.err
+###### FAILED
