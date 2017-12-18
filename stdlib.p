@@ -71,7 +71,7 @@ int matrix flipIntMatrixH(int matrix m) {
     height = m.rows;
     width = m.cols;
 
-    m2 = m;
+    m2 = matrix(m.rows, m.cols, int);
 
     for (i = 0; i < height; i=i+1)
     {
@@ -93,7 +93,7 @@ pixel matrix flipPixelMatrixH(pixel matrix pm) {
     height = pm.rows;
     width = pm.cols;
 
-    pm2 = pm;
+    pm2 = matrix(pm.rows, pm.cols, pixel);
 
     for (i = 0; i < height; i=i+1)
     {
@@ -115,7 +115,7 @@ int matrix flipIntMatrixV(int matrix m) {
     height = m.rows;
     width = m.cols;
 
-    m2 = m;
+    m2 = matrix(m.rows, m.cols, int);
 
     for (i = 0; i < width; i=i+1)
     {
@@ -137,7 +137,7 @@ pixel matrix flipPixelMatrixV(pixel matrix pm) {
     height = pm.rows;
     width = pm.cols;
 
-    pm2 = pm;
+    pm2 = matrix(pm.rows, pm.cols, pixel);
 
 
     for (i = 0; i < width; i=i+1)
@@ -162,26 +162,51 @@ bool pixelEquality(pixel p1, pixel p2) {
     }
 }
 
+bool pixelSimilarity(pixel p1, pixel p2) {
+    int diff;
+    diff = 30;
+    if ((absInt(p1.R - p2.R) < diff) && (absInt(p1.G - p2.G) < diff) && (absInt(p1.B - p2.B) < diff) && (absInt(p1.A - p2.A) < diff))
+    {
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+int absInt(int a)
+{
+    if (a < 0)
+    {
+        return -a;
+    }
+    else
+    {
+        return a;
+    }
+}
+
 pixel matrix matrixAnd(pixel matrix pm1, pixel matrix pm2) {
     int i;
     int j;
 
     pixel matrix pm3;
 
-    pm3 = pm1;
+    pm3 = matrix(pm1.rows, pm1.cols, pixel);
 
     for (i = 0; i < pm1.rows; i=i+1)
     {
         for (j = 0; j < pm1.cols; j=j+1)
         {
-            if (pixelEquality(pm1[i][j], pm2[i][j]))
+            if (pixelSimilarity(pm1[i][j], pm2[i][j]))
             {
-                pm3[i][j] = pm1[i][j];
+                pm3[i][j] = (255,255,255,255);
             }
 
             else
             {
-                pm3[i][j] = (255,255,255,255);
+                pm3[i][j] = pm1[i][j];
             }
         }
     }
@@ -224,7 +249,7 @@ pixel matrix grayscale(pixel matrix pm) {
     pixel p;
     pixel matrix pmGray;
 
-    pmGray = pm;
+    pmGray = matrix(pm.rows, pm.cols, pixel);
 
     for (i = 0; i < pm.rows; i=i+1)
     {
@@ -254,7 +279,7 @@ int matrix addIntMatrix(int matrix a, int matrix b) {
     int matrix m;
     int i;
     int j;
-    m=a;
+    m = matrix(a.rows, a.cols, int);
     for (i = 0; i < a.rows; i=i+1)
     {
         for (j = 0; j < a.cols; j=j+1)
@@ -270,7 +295,7 @@ int matrix subtractIntMatrix(int matrix a, int matrix b) {
     int matrix m;
     int i;
     int j;
-    m=a;
+    m = matrix(a.rows, a.cols, int);
     for (i = 0; i < a.rows; i=i+1)
     {
         for (j = 0; j < a.cols; j=j+1)
@@ -324,7 +349,7 @@ pixel matrix enhanceRedMatrix(pixel matrix m, int amount) {
     pixel p;
     int red;
     pixel matrix pm;
-    pm = m;
+    pm = matrix(m.rows, m.cols, pixel);
 
     for (i = 0; i < m.rows; i=i+1)
     {
@@ -348,7 +373,7 @@ pixel matrix enhanceGreenMatrix(pixel matrix m, int amount) {
     pixel p;
     int green;
     pixel matrix pm;
-    pm = m;
+    pm = matrix(m.rows, m.cols, pixel);
 
     for (i = 0; i < m.rows; i=i+1)
     {
@@ -373,7 +398,7 @@ pixel matrix enhanceBlueMatrix(pixel matrix m, int amount) {
     pixel p;
     int blue;
     pixel matrix pm;
-    pm = m;
+    pm = matrix(m.rows, m.cols, pixel);
 
     for (i = 0; i < m.rows; i=i+1)
     {
