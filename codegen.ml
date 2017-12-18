@@ -55,6 +55,10 @@ let translate (globals, functions) =
   let return_type = L.pointer_type(L.i64_type context) in
   let read_img = L.var_arg_function_type return_type [| str_t |] in
   let read_img_func = L.declare_function "read_img" read_img the_module in
+  
+  let arg1 = L.pointer_type(L.i64_type context) in
+  let write_img = L.var_arg_function_type i32_t [|arg1; str_t; str_t |] in
+  let write_img_func = L.declare_function "write_img" write_img the_module in
 
 
   (* declare read, which the read built-in function will call *)
@@ -574,6 +578,8 @@ let translate (globals, functions) =
             "printf" builder
       | S.SCall ("read", [e], _) ->
           L.build_call read_img_func [| (expr builder e) |] "read_img" builder
+      | S.SCall ("write", [e1;e2;e3], _)->
+          L.build_call write_img_func [|(expr builder e1); (expr builder e2); (expr builder e3)|] "write_img" builder
       | S.SCall(f, act, _) ->
           let (fdef, fdecl) = StringMap.find f function_decls in
           let actuals = List.rev (List.map (expr builder) (List.rev act)) in
