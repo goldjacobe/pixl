@@ -93,7 +93,7 @@ let check_function globals fdecls func =
     SAssignm(var,se1,se2,se3,tp)
 
   and check_crop var r0 r1 c0 c1 =
-    let svar = expr_to_sexpr var in
+    let svar = SId(var, type_of_identifier var) in
     let sr0 = expr_to_sexpr r0 in
     let sr1 = expr_to_sexpr r1 in
     let sc0 = expr_to_sexpr c0 in
@@ -104,7 +104,6 @@ let check_function globals fdecls func =
       Matrix(Pixel) -> SCall("cropPixelMatrix", [svar; sr0; sr1; sc0; sc1], Matrix(Pixel))
       | Matrix(Int) -> SCall("cropPixelMatrix", [svar; sr0; sr1; sc0; sc1], Matrix(Int))
     )
-    SCrop(var, expr_to_sexpr r0, expr_to_sexpr r1, expr_to_sexpr c0, expr_to_sexpr r1, type_of_identifier var)
 
   and check_call fname actuals =
     let rec helper = function
