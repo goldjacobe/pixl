@@ -7,10 +7,10 @@ int main() {
     pixel p;
     pixel matrix pmGray;
     int amt;
-    
+
     inputMatrix = read("pine.jpg");
     outputMatrix = inputMatrix;
-    
+
     for (i = 0; i < inputMatrix.rows; i=i+1)
     {
         for (j = 0; j < inputMatrix.cols; j=j+1)
@@ -38,6 +38,6 @@ int main() {
             }
         }
     }
-
+    outputMatrix = |outputMatrix;
     write(outputMatrix,"pinePop","jpg");
 }
