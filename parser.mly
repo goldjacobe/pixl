@@ -127,8 +127,8 @@ expr:
   | ID LANGLE expr COLON expr COMMA expr COLON expr RANGLE { Crop($1, $3, $5, $7, $9) }
   | ID DOT ROWS                                            { Rows($1) } 
   | ID DOT COLS                                            { Cols($1) }
-  | BAR expr                                               { HFlip($2) }
-  | TILDA expr                                             { VFlip($2) }
+  | BAR expr                                               { VFlip($2) }
+  | TILDA expr                                             { HFlip($2) }
   | MAT LPAREN expr COMMA expr COMMA typ RPAREN            { EMatrix($3, $5, $7) }
 
 actuals_opt:

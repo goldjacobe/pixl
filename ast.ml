@@ -100,6 +100,8 @@ let rec string_of_expr = function
   | Assignp(id, f, e1) -> id ^ "." ^ string_of_field f ^ "=" ^ string_of_expr e1 
   | Assignm(id, e1, e2, value) -> id ^ "[" ^ string_of_expr e1 ^ "]" ^ "[" ^ string_of_expr e2 ^ "]" ^ "=" ^ string_of_expr value   
   | EMatrix(e1,e2,tp) -> "matrix(" ^ string_of_expr e1 ^ ", " ^ string_of_expr e2 ^ ")"
+  | HFlip(e) -> "hflip " ^ string_of_expr e
+  | VFlip(e) -> "vflip " ^ string_of_expr e
 
 
 let rec string_of_stmt = function
