@@ -10,6 +10,7 @@ int main() {
 
 	pm = [p1,p1;p2,p2];
     pm2 = |pm;
-	p3 = pm2[0][0];
+
+    p3 = pm2[0][0];
     print(p3.R);
 }

@@ -4,10 +4,5 @@ int main() {
 	m = [0,0,0,0;1,1,1,1;2,2,2,2;3,3,3,3];
     new = flipIntMatrixV(m);
 
-    if (new[0][0] == 3) {
-		prints("pass");
-	}
-	else {
-		prints("fail");
-	}
+    print(new[0][0]);
 }

@@ -174,6 +174,29 @@ pixel addPixel(pixel p1, pixel p2) {
     return p3;
 }
 
+pixel matrix grayscale(pixel matrix pm) {
+    int i;
+    int j;
+    int average;
+    pixel p;
+    pixel matrix pmGray;
+
+    pmGray = pm;
+
+    for (i = 0; i < pm.rows; i=i+1)
+    {
+        for (j = 0; j < pm.cols; j=j+1)
+        {
+            p = pm[i][j];
+            average = (p.R + p.G + p.B)/3;
+            pmGray[i][j] = (average, average, average, p.A);
+        }
+    }
+
+    return pmGray;
+}
+
+
 int abs(int x) {
     if (x > 0) {
         return x;
