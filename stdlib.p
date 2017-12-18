@@ -169,13 +169,7 @@ pixel addPixel(pixel p1, pixel p2) {
     p3.R = p1.R + p2.R;
     p3.G = p1.G + p2.G;
     p3.B = p1.B + p2.B;
-    
-    if (p1.A > p2.A) {
-        p3.A = p1.A;
-    }
-    else {
-        p3.A = p2.A;
-    }
+    p3.A = max(p1.A, p2.A);
 
     return p3;
 }
@@ -218,13 +212,7 @@ pixel subtractPixel(pixel p1, pixel p2) {
     p3.R = abs(p1.R - p2.R);
     p3.G = abs(p1.G - p2.G);
     p3.B = abs(p1.B - p2.B);
-    
-    if (p1.A > p2.A) {
-        p3.A = p1.A;
-    }
-    else {
-        p3.A = p2.A;
-    }
+    p3.A = max(p1.A, p2.A);
 
     return p3;
 }
@@ -259,4 +247,130 @@ int matrix subtractIntMatrix(int matrix a, int matrix b) {
     }
 
     return m;
+}
+
+pixel enhanceRed(pixel p, int amount) {
+  int currentRed;
+  int newRed;
+  currentRed = p.R;
+  newRed = currentRed + amount;
+  if (newRed >= 255) {
+      newRed = 255;
+  }
+  p.R = newRed;
+  return p;
+}
+
+pixel enhanceGreen(pixel p, int amount) {
+  int currentGreen;
+  int newGreen;
+  currentGreen = p.G;
+  newGreen = currentGreen + amount;
+  if (newGreen >= 255) {
+      newGreen = 255;
+  }
+  p.G = newGreen;
+  return p;
+}
+
+pixel enhanceBlue(pixel p, int amount) {
+  int currentBlue;
+  int newBlue;
+  currentBlue = p.B;
+  newBlue = currentBlue + amount;
+  if (newBlue >= 255) {
+      newBlue = 255;
+  }
+  p.B = newBlue;
+  return p;
+}
+
+pixel matrix enhanceRedMatrix(pixel matrix m, int amount) {
+    int i;
+    int j;
+    pixel p;
+    int red;
+    pixel matrix pm;
+    pm = m;
+
+    for (i = 0; i < m.rows; i=i+1)
+    {
+        for (j = 0; j < m.cols; j=j+1)
+        {
+            p = pm[i][j];
+            red = p.R;
+            red = red + amount;
+            p.R = red;
+            pm[i][j] = p;
+        }   
+    }
+    
+    return pm;
+
+}
+
+pixel matrix enhanceGreenMatrix(pixel matrix m, int amount) {
+    int i;
+    int j;
+    pixel p;
+    int green;
+    pixel matrix pm;
+    pm = m;
+
+    for (i = 0; i < m.rows; i=i+1)
+    {
+        for (j = 0; j < m.cols; j=j+1)
+        {
+            p = pm[i][j];
+            green = p.G;
+            green = green + amount;
+            p.G = green;
+            pm[i][j] = p;
+        }   
+    }
+    
+    return pm;
+
+}
+
+
+pixel matrix enhanceBlueMatrix(pixel matrix m, int amount) {
+    int i;
+    int j;
+    pixel p;
+    int blue;
+    pixel matrix pm;
+    pm = m;
+
+    for (i = 0; i < m.rows; i=i+1)
+    {
+        for (j = 0; j < m.cols; j=j+1)
+        {
+            p = pm[i][j];
+            blue = p.B;
+            blue = blue + amount;
+            p.B = blue;
+            pm[i][j] = p;
+        }   
+    }
+    
+    return pm;
+
+}
+
+int increment(int a) {
+    return a+1;
+}
+
+int decrement(int a) {
+    return a-1;
+}
+
+int max(int a, int b) {
+    if (a < b) {
+        return b;
+    }
+    else {
+        return a;
+    }
 }

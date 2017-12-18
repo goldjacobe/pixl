@@ -5,7 +5,7 @@ open Ast
 %}
 
 %token SEMI LPAREN RPAREN LBRACE RBRACE COMMA
-%token PLUS MINUS TIMES DIVIDE ASSIGN NOT 
+%token PLUS MINUS TIMES DIVIDE ASSIGN NOT INCREMENT DECREMENT
 %token EQ NEQ LT LEQ GT GEQ TRUE FALSE AND OR
 %token RETURN IF ELSE FOR WHILE INT BOOL VOID STRING
 %token LBRAC RBRAC COLON CHAR LANGLE RANGLE BAR TILDA
@@ -24,6 +24,7 @@ open Ast
 %left EQ NEQ
 %left LT GT LEQ GEQ
 %left PLUS MINUS
+%left INCREMENT DECREMENT
 %left TIMES DIVIDE
 %right NOT NEG
 
@@ -129,6 +130,8 @@ expr:
   | ID DOT COLS                                            { Cols($1) }
   | BAR expr                                               { VFlip($2) }
   | TILDA expr                                             { HFlip($2) }
+  | expr INCREMENT                                         { Unop(Increment, $1) }
+  | expr DECREMENT                                         { Unop(Decrement, $1) }
   | MAT LPAREN expr COMMA expr COMMA typ RPAREN            { EMatrix($3, $5, $7) }
 
 actuals_opt:
