@@ -6,10 +6,10 @@ int main() {
     pixel p;
     pixel matrix pmGray;
     int amt;
-    
+
     inputMatrix = read("pine.jpg");
     outputMatrix = |inputMatrix;
-    
+
     for (i = 0; i < inputMatrix.rows; i=i+1)
     {
         for (j = 0; j < inputMatrix.cols; j=j+1)
@@ -37,7 +37,7 @@ int main() {
         }
     }
     outputMatrix = outputMatrix<<0:inputMatrix.rows/2,0:inputMatrix.cols-1>>;
-    write(outputMatrix,"pine-edited","jpg");
+    write(outputMatrix,"flipPop-out","jpg");
 
-    
+
 }

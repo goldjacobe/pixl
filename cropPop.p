@@ -7,10 +7,10 @@ int main() {
     pixel p;
     pixel matrix pmGray;
     int amt;
-    
+
     inputMatrix = read("pine.jpg");
     outputMatrix = inputMatrix;
-    
+
     for (i = 0; i < inputMatrix.rows; i=i+2)
     {
         for (j = 0; j < inputMatrix.cols; j=j+2)
@@ -23,5 +23,5 @@ int main() {
         }
     }
 
-    write(outputMatrix,"pinePop","jpg");
+    write(outputMatrix,"cropPop-out","jpg");
 }
