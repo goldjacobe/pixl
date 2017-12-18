@@ -2,7 +2,11 @@
 _build/*
 pixl.native
 *~
-.testall.log
+*.log
 *.o
 *.diff
 *.exe
+*.ll
+*.s
+*.diff
+

@@ -26,12 +26,10 @@ let translate (globals, functions) =
   and i32_t  = L.i32_type  context
   and i8_t   = L.i8_type   context
   and i1_t   = L.i1_type   context
+  and void_t = L.void_type context
   and str_t  = L.pointer_type (L.i8_type context) in
 
-  let global_vars = ref (StringMap.empty) in
-  let local_vars = ref (StringMap.empty) in
   let funcn = ref (List.hd functions) in
-  let set_lookup = ref (StringMap.empty) in
 
   let ltype_of_typ = function
       A.Int -> i64_t
@@ -39,7 +37,8 @@ let translate (globals, functions) =
     | A.Char -> i8_t
     | A.String -> str_t
     | A.Pixel -> L.pointer_type(L.i64_type context)
-    | A.Matrix(typ) -> L.pointer_type(L.i64_type context) in
+    | A.Matrix(_) -> L.pointer_type(L.i64_type context)
+    | A.Void -> void_t in
 
   (* Declare each global variable; remember its value in a map *)
   let global_vars =
@@ -363,7 +362,8 @@ let translate (globals, functions) =
                                                         let arr = L.build_pointercast arr typ "matrix2" builder in
                                                         let arr_ptr = L.build_gep arr [|L.const_int i64_t 0|] "pixel3" builder in ignore(L.build_store (rows) arr_ptr builder);
                                                         let arr_ptr = L.build_gep arr [|L.const_int i64_t 1|] "pixel3" builder in ignore(L.build_store (cols) arr_ptr builder);
-                                                        arr)
+                                                        arr
+                                     | _ -> raise(Failure("You shouldn't be seeing this")))
 
       | S.SAssignm(id, exp1, exp2, value, typ) -> let arr =  L.build_load (lookup id) id builder
                                              and value = expr builder value in
@@ -401,10 +401,10 @@ let translate (globals, functions) =
                                                        let pointer = L.build_gep arr [|loc|] "matrix8" builder in
                                                        ignore(L.build_store (value) pointer builder);
                                                        arr
-                                             )
+                                             | _ -> raise(Failure("You shouldn't be seeing this")))
 
 
-      | S.SAssignp(id,field,e1,typ) -> let arr = L.build_load (lookup id) id builder
+      | S.SAssignp(id,field,e1,_) -> let arr = L.build_load (lookup id) id builder
                                         and value = expr builder e1 in
 					(match field with
                                           A.Red ->   let arr_ptr = L.build_gep arr [|L.const_int i64_t 0|] "pixel3" builder in ignore(L.build_store (value) arr_ptr builder)
@@ -486,7 +486,8 @@ let translate (globals, functions) =
                                 ignore(L.build_store (element) arr_ptr builder);
                                 done
                            done;
-                           arr)
+                           arr
+                         | _ -> raise(Failure("You shouldn't be seeing this")))
 
 
       | S.SMatrixAccess(v,e1,e2,typ) -> (match typ with
@@ -526,10 +527,9 @@ let translate (globals, functions) =
                                    let right = L.build_add exp2 (L.const_int i64_t 2) "right" builder in
                                    let loc = L.build_add left right "add" builder in
                                    let pointer = L.build_gep arr [|loc|] "matrix8" builder in
-                                   L.build_load pointer "Access3" builder)
-
-
-      | S.SAccess(s, e, t) ->
+                                   L.build_load pointer "Access3" builder
+                                   | _ -> raise(Failure("You shouldn't be seeing this")))
+      | S.SAccess(s, e, _) ->
           let arr = L.build_load (lookup s) s builder in
                            (match e with
                              A.Red  -> let pointer = L.build_gep arr [|L.const_int i64_t 0|] "pixelRed" builder in
@@ -567,10 +567,8 @@ let translate (globals, functions) =
           let e' = expr builder e in
           (match op with
             A.Neg       -> L.build_neg e' "tmp" builder
-            | A.Not     -> L.build_not e' "tmp" builder)
-            (*| A.Card    ->
-                        let struct_ptr = expr builder e in
-                        L.build_load (L.build_struct_gep struct_ptr 1 "struct1" builder) "idl" builder *)
+            | A.Not     -> L.build_not e' "tmp" builder
+            | _ -> raise(Failure("You shouldn't be seeing this")))
 
       | S.SAssign (s, e, _) -> let e' = expr builder e in
                           ignore (L.build_store e' (lookup s) builder); e'
@@ -648,8 +646,7 @@ let translate (globals, functions) =
 
     let rec stmt builder = function
       S.SBlock sl -> List.fold_left stmt builder sl
-      |S.SExpr (e, t) -> ignore (expr builder e); builder
-
+      |S.SExpr (e, _) -> ignore (expr builder e); builder
       |S.SReturn (e) -> ignore (match !funcn.S.styp with
           A.Void -> L.build_ret_void builder
           | _ -> L.build_ret (expr builder e) builder); builder
@@ -682,7 +679,7 @@ let translate (globals, functions) =
           ignore (L.build_cond_br bool_val body_bb merge_bb pred_builder);
           L.builder_at_end context merge_bb
      | S.SFor (e1, e2, e3, body) -> stmt builder
-            ( S.SBlock [S.SExpr(e1,Int); S.SWhile (e2, S.SBlock [body ; S.SExpr(e3,Int)]) ] )
+            ( S.SBlock [S.SExpr(e1,A.Int); S.SWhile (e2, S.SBlock [body ; S.SExpr(e3,A.Int)]) ] )
 
 
 

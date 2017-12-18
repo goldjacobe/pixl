@@ -60,7 +60,7 @@ let check_function globals fdecls func =
     | Assignm(var,e1,e2,e3)    -> (check_assign_matrix var e1 e2 e3)
     | Crop(var,r0,r1,c0,c1)   -> (check_crop var r0 r1 c0 c1)
     | Call(fname, actuals)    -> (check_call fname actuals)
-    | MatrixAccess(var,e1,e2) -> (check_matrix_access e var e1 e2)
+    | MatrixAccess(var,e1,e2) -> (check_matrix_access var e1 e2)
     | Rows(var)               -> SRows(var)
     | EMatrix(e1,e2,e3)       -> (check_empty_matrix e1 e2 e3)
     | HFlip(e)                -> (check_h_flip e)
@@ -71,16 +71,16 @@ let check_function globals fdecls func =
   and check_h_flip e =
     let se = expr_to_sexpr e in
     let tp = sexpr_to_type se in
-    (match tp with 
+    (match tp with
       Matrix(Pixel) -> SCall("flipPixelMatrixH", [se], Matrix(Pixel))
       | Matrix(Int) -> SCall("flipIntMatrixH", [se], Matrix(Int))
       | _ -> raise(Failure("Can only flip int or pixel matrices"))
     )
-  
+
   and check_v_flip e =
     let se = expr_to_sexpr e in
     let tp = sexpr_to_type se in
-    (match tp with 
+    (match tp with
       Matrix(Pixel) -> SCall("flipPixelMatrixV", [se], Matrix(Pixel))
       | Matrix(Int) -> SCall("flipIntMatrixV", [se], Matrix(Int))
       | _ -> raise(E.IncorrectFlipExpr("Can only flip int or pixel matrices"))
@@ -91,7 +91,7 @@ let check_function globals fdecls func =
   let se2 = expr_to_sexpr e2 in
   SEMatrix(se1, se2, Matrix(tp))
 
-  and check_matrix_access m var e1 e2 =
+  and check_matrix_access var e1 e2 =
     let se1 = expr_to_sexpr e1 in
     let se2 = expr_to_sexpr e2 in
     let tp = type_of_identifier var in
@@ -122,9 +122,10 @@ let check_function globals fdecls func =
     let sc1 = expr_to_sexpr c1 in
     if (r1 < r0) then raise (E.InvalidCropDimensions("Max row must be greater than or equal to min row."))
     else if (c1 < c1) then raise (E.InvalidCropDimensions("Max column must be greater than or equal to min column."))
-    else (match (type_of_identifier var) with 
+    else (match (type_of_identifier var) with
       Matrix(Pixel) -> SCall("cropPixelMatrix", [svar; sr0; sr1; sc0; sc1], Matrix(Pixel))
       | Matrix(Int) -> SCall("cropIntMatrix", [svar; sr0; sr1; sc0; sc1], Matrix(Int))
+      | _ -> raise (Failure("Cannot crop a non-matrix"))
     )
 
   and check_call fname actuals =
@@ -292,7 +293,6 @@ let check_function globals fdecls func =
     | SAssign(_, _, typ)               -> typ
     | SAssignp(_,_,_, typ)             -> typ
     | SAssignm(_,_,_,_, typ)           -> typ
-    | SCrop(_,_,_,_,_,typ)             -> typ
     | SCall(_,_,typ)                   -> typ
     | SAccess(_,_,typ)                 -> typ
     | SMatrixAccess(_,_,_,typ)         -> typ

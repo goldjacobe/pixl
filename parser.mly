@@ -24,9 +24,8 @@ open Ast
 %left EQ NEQ
 %left LT GT LEQ GEQ
 %left PLUS MINUS
-%left INCREMENT DECREMENT
 %left TIMES DIVIDE
-%right NOT NEG
+%right NOT NEG TILDA BAR
 
 %start program
 %type <Ast.program> program
@@ -126,12 +125,12 @@ expr:
   | ID DOT ALPHA                                           { Access($1, Alpha) }
   | ID LBRAC expr RBRAC LBRAC expr RBRAC                   { MatrixAccess($1, $3, $6)}
   | ID LANGLE expr COLON expr COMMA expr COLON expr RANGLE { Crop($1, $3, $5, $7, $9) }
-  | ID DOT ROWS                                            { Rows($1) } 
+  | ID DOT ROWS                                            { Rows($1) }
   | ID DOT COLS                                            { Cols($1) }
   | BAR expr                                               { VFlip($2) }
   | TILDA expr                                             { HFlip($2) }
-  | expr INCREMENT                                         { Unop(Increment, $1) }
-  | expr DECREMENT                                         { Unop(Decrement, $1) }
+  | expr PLUS PLUS                                         { Unop(Increment, $1) }
+  | expr MINUS MINUS                                       { Unop(Decrement, $1) }
   | MAT LPAREN expr COMMA expr COMMA typ RPAREN            { EMatrix($3, $5, $7) }
 
 actuals_opt:
