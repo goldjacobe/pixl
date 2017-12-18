@@ -164,7 +164,7 @@ let check_function globals fdecls func =
       | Sub when t1 = Pixel && t2 = Pixel -> SCall("subtractPixel", [se1;se2], Pixel)
       | Add when t1 = Matrix(Int) && t2 = Matrix(Int) -> SCall("addIntMatrix", [se1;se2], Matrix(Int))
       | Sub when t1 = Matrix(Int) && t2 = Matrix(Int) -> SCall("subtractIntMatrix", [se1;se2], Matrix(Int))
-      | And when t1 = Matrix(Pixel) && t2 = Matrix(Pixel) -> SCall("matrixAnd", [se1;se2], Matrix(Pixel))
+      | Add when t1 = Matrix(Pixel) && t2 = Matrix(Pixel) -> SCall("matrixAnd", [se1;se2], Matrix(Pixel))
       | _ -> raise (Failure ("illegal binary operator " ^
           string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
           string_of_typ t2 ^ " in " ^ string_of_expr e1 ^ string_of_op op ^ string_of_expr e2))
