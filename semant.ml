@@ -62,8 +62,26 @@ let check_function globals fdecls func =
     | MatrixAccess(var,e1,e2) -> (check_matrix_access e var e1 e2)
     | Rows(var)               -> SRows(var)
     | EMatrix(e1,e2,e3)       -> (check_empty_matrix e1 e2 e3)
+    | HFlip(e)                -> (check_h_flip e)
+    | VFlip(e)                -> (check_v_flip e)
     | Cols(var)               -> SCols(var)
   )
+
+  and check_h_flip e =
+    let se = expr_to_sexpr e in
+    let tp = sexpr_to_type se in
+    (match tp with 
+      Matrix(Pixel) -> SCall("flipPixelMatrixH", [se], Matrix(Pixel))
+      | Matrix(Int) -> SCall("flipIntMatrixH", [se], Matrix(Int))
+    )
+  
+  and check_v_flip e =
+    let se = expr_to_sexpr e in
+    let tp = sexpr_to_type se in
+    (match tp with 
+      Matrix(Pixel) -> SCall("flipPixelMatrixV", [se], Matrix(Pixel))
+      | Matrix(Int) -> SCall("flipIntMatrixV", [se], Matrix(Int))
+    )
 
   and check_empty_matrix e1 e2 tp =
   let se1 = expr_to_sexpr e1 in
@@ -98,11 +116,11 @@ let check_function globals fdecls func =
     let sr1 = expr_to_sexpr r1 in
     let sc0 = expr_to_sexpr c0 in
     let sc1 = expr_to_sexpr c1 in
-    if (r1 <= r0) then raise (Failure("Max row must be greater than or equal to min row."))
-    else if (c1 <= r0) then raise (Failure("Max column must be greater than or equal to min column."))
+    if (r1 < r0) then raise (Failure("Max row must be greater than or equal to min row."))
+    else if (c1 < c1) then raise (Failure("Max column must be greater than or equal to min column."))
     else (match (type_of_identifier var) with 
       Matrix(Pixel) -> SCall("cropPixelMatrix", [svar; sr0; sr1; sc0; sc1], Matrix(Pixel))
-      | Matrix(Int) -> SCall("cropPixelMatrix", [svar; sr0; sr1; sc0; sc1], Matrix(Int))
+      | Matrix(Int) -> SCall("cropIntMatrix", [svar; sr0; sr1; sc0; sc1], Matrix(Int))
     )
 
   and check_call fname actuals =

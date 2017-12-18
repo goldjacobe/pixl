@@ -4,6 +4,7 @@ type op = Add | Sub | Mult | Div | Equal | Neq | Less | Leq | Greater | Geq | An
 type field = Red | Blue | Green | Alpha 
 
 type uop = Neg | Not 
+type flip = Bar | Underscore
 
 type typ = Int | Bool | Void | String | Float | Pixel | Char | File | Matrix of typ
 
@@ -22,6 +23,8 @@ and expr =
   | Call of string * expr list
   | Access of string * field
   | Crop of string * expr * expr * expr * expr
+  | HFlip of expr
+  | VFlip of expr
   | Noexpr 
   | MatrixAccess of string * expr * expr
   | Rows of string
