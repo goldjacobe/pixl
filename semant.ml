@@ -155,7 +155,10 @@ let check_function globals fdecls func =
       | Less | Leq | Greater | Geq when t1 = Int && t2 = Int -> SBinop(se1,op,se2,Bool)
       | And | Or when t1 = Bool && t2 = Bool -> SBinop(se1,op,se2,Bool)
       | Add when t1 = String && t2 = String -> SBinop(se1,op,se2,String)
-      | Add when t1 = Pixel && t2 = Pixel -> SBinop(se1,op,se2,Pixel)
+      | Add when t1 = Pixel && t2 = Pixel -> SCall("addPixel", [se1;se2], Pixel)
+      | Sub when t1 = Pixel && t2 = Pixel -> SCall("subtractPixel", [se1;se2], Pixel)
+      | Add when t1 = Matrix(Int) && t2 = Matrix(Int) -> SCall("addIntMatrix", [se1;se2], Matrix(Int))
+      | Sub when t1 = Matrix(Int) && t2 = Matrix(Int) -> SCall("subtractIntMatrix", [se1;se2], Matrix(Int))
       | And when t1 = Matrix(Pixel) && t2 = Matrix(Pixel) -> SCall("matrixAnd", [se1;se2], Matrix(Pixel))
       | _ -> raise (Failure ("illegal binary operator " ^
           string_of_typ t1 ^ " " ^ string_of_op op ^ " " ^
