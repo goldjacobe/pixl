@@ -6,5 +6,4 @@ int main() {
         m = [p,p;p,p];
         a = m[1][1];
         print(a.A);
-      
 }
