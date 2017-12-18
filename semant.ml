@@ -81,7 +81,8 @@ let check_function globals fdecls func =
   and check_assign_pixel var field exp =
     let sexp = expr_to_sexpr exp in
     let tp = sexpr_to_type sexp in
-    if tp != Int then raise(Failure("Pixel reassignment requires an Int value"))
+    if type_of_identifier var != Pixel then raise(Failure("Trying to assign to a pixel but found a " ^ string_of_typ (type_of_identifier var)))
+    else if tp != Int then raise(Failure("Pixel reassignment requires an Int value"))
     else SAssignp(var,field,sexp,Int)
 
   and check_assign_matrix var e1 e2 e3 =
@@ -92,9 +93,18 @@ let check_function globals fdecls func =
     SAssignm(var,se1,se2,se3,tp)
 
   and check_crop var r0 r1 c0 c1 =
+    let svar = expr_to_sexpr var in
+    let sr0 = expr_to_sexpr r0 in
+    let sr1 = expr_to_sexpr r1 in
+    let sc0 = expr_to_sexpr c0 in
+    let sc1 = expr_to_sexpr c1 in
     if (r1 <= r0) then raise (Failure("Max row must be greater than or equal to min row."))
     else if (c1 <= r0) then raise (Failure("Max column must be greater than or equal to min column."))
-    else SCrop(var, expr_to_sexpr r0, expr_to_sexpr r1, expr_to_sexpr c0, expr_to_sexpr r1, type_of_identifier var)
+    else (match (type_of_identifier var) with 
+      Matrix(Pixel) -> SCall("cropPixelMatrix", [svar; sr0; sr1; sc0; sc1], Matrix(Pixel))
+      | Matrix(Int) -> SCall("cropPixelMatrix", [svar; sr0; sr1; sc0; sc1], Matrix(Int))
+    )
+    SCrop(var, expr_to_sexpr r0, expr_to_sexpr r1, expr_to_sexpr c0, expr_to_sexpr r1, type_of_identifier var)
 
   and check_call fname actuals =
     let rec helper = function
