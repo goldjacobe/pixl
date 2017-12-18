@@ -10,4 +10,7 @@ int main() {
     print(p.R);
     p = n[0][0];
     print(p.R);
+
+    print(m.rows);
+    print(m.cols);
 }
