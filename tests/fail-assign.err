@@ -1,0 +1,2 @@
+Fatal error: exception Failure("Illegal assignment trying to assign a to p
+pixel = int in a")
