@@ -1,3 +1,29 @@
+int increment(int a) {
+    return a+1;
+}
+
+int decrement(int a) {
+    return a-1;
+}
+
+int max(int a, int b) {
+    if (a < b) {
+        return b;
+    }
+    else {
+        return a;
+    }
+}
+
+int abs(int x) {
+    if (x > 0) {
+        return x;
+    }
+    else {
+        return -x;
+    }
+}
+
 pixel matrix cropPixelMatrix(pixel matrix pm, int r1, int r2, int c1, int c2) {
     int i;
     int j;
@@ -174,13 +200,26 @@ pixel addPixel(pixel p1, pixel p2) {
     return p3;
 }
 
-int abs(int x) {
-    if (x > 0) {
-        return x;
+pixel matrix grayscale(pixel matrix pm) {
+    int i;
+    int j;
+    int average;
+    pixel p;
+    pixel matrix pmGray;
+
+    pmGray = pm;
+
+    for (i = 0; i < pm.rows; i=i+1)
+    {
+        for (j = 0; j < pm.cols; j=j+1)
+        {
+            p = pm[i][j];
+            average = (p.R + p.G + p.B)/3;
+            pmGray[i][j] = (average, average, average, p.A);
+        }
     }
-    else {
-        return -x;
-    }
+
+    return pmGray;
 }
 
 pixel subtractPixel(pixel p1, pixel p2) {
@@ -333,21 +372,4 @@ pixel matrix enhanceBlueMatrix(pixel matrix m, int amount) {
     
     return pm;
 
-}
-
-int increment(int a) {
-    return a+1;
-}
-
-int decrement(int a) {
-    return a-1;
-}
-
-int max(int a, int b) {
-    if (a < b) {
-        return b;
-    }
-    else {
-        return a;
-    }
 }
