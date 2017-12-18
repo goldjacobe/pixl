@@ -24,9 +24,8 @@ open Ast
 %left EQ NEQ
 %left LT GT LEQ GEQ
 %left PLUS MINUS
-%nonassoc INCREMENT DECREMENT
 %left TIMES DIVIDE
-%right NOT NEG
+%right NOT NEG TILDA BAR
 
 %start program
 %type <Ast.program> program
@@ -130,8 +129,8 @@ expr:
   | ID DOT COLS                                            { Cols($1) }
   | BAR expr                                               { VFlip($2) }
   | TILDA expr                                             { HFlip($2) }
-  | expr INCREMENT                                         { Unop(Increment, $1) }
-  | expr DECREMENT                                         { Unop(Decrement, $1) }
+  | expr PLUS PLUS                                         { Unop(Increment, $1) }
+  | expr MINUS MINUS                                       { Unop(Decrement, $1) }
   | MAT LPAREN expr COMMA expr COMMA typ RPAREN            { EMatrix($3, $5, $7) }
 
 actuals_opt:
