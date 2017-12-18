@@ -95,7 +95,7 @@ let translate (globals, functions) =
   let build_function_body fdecl =
     let (the_function, _) = StringMap.find fdecl.S.sfname function_decls in
     let builder = L.builder_at_end context (L.entry_block the_function) in
-    let _ = L.set_gc (Some "shadow-stack") the_function in
+    let _ = L.set_gc (Some "ocaml") the_function in
 
     let int_format_str = L.build_global_stringptr "%d\n" "fmt" builder in
     let str_format_str = L.build_global_stringptr "%s\n" "fmt" builder in
