@@ -189,6 +189,23 @@ pixel matrix matrixAnd(pixel matrix pm1, pixel matrix pm2) {
     return pm3;
 }
 
+pixel matrix invert(pixel matrix pm) {
+    int i;
+    int j;
+
+    pixel matrix pm1;
+    pm1 = pm;
+
+    for (i = 0; i < pm.rows; i=i+1)
+    {
+        for (j = 0; j < pm.cols; j=j+1) {
+            pm1[i][j] = (255,255,255,255) - pm[i][j];
+        }
+    }
+
+    return pm1;
+}
+
 pixel addPixel(pixel p1, pixel p2) {
     pixel p3;
     p3 = (0,0,0,0);
