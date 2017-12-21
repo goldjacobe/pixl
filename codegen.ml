@@ -1,5 +1,5 @@
 (* Authors: Justin Borczuk and Marco Starger *)
-(* Code generation: translate takes a SAST andproduces LLVM IR *)
+(* Code generation: translate takes a SAST and produces LLVM IR *)
 
 module Semant = Semant
 module L = Llvm
