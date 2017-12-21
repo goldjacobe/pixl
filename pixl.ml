@@ -1,6 +1,8 @@
+(* Author: Jacob Gold *)
 (* Top-level of the Pixl compiler: scan & parse the input,
    check the AST and convert it into a SAST, generate LLVM IR, and
    dump the .ll file *)
+
 type action = Ast | LLVM_IR | Compile
 
 let _ =

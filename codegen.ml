@@ -1,3 +1,4 @@
+(* Authors: Justin Borczuk and Marco Starger *)
 (* Code generation: translate takes a SAST andproduces LLVM IR *)
 
 module Semant = Semant

@@ -1,3 +1,4 @@
+(* Authors: Maxwell Hu and Justin Borczuk *)
 (* Ocamllex scanner for MicroC *)
 
 { open Parser }

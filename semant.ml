@@ -1,3 +1,4 @@
+(* Authors: Shiv Sakhuja and Jacob Gold *)
 (* Semantic checking for the PIXL compiler *)
 
 open Ast

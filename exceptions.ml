@@ -1,3 +1,4 @@
+(* Author: Shiv Sakhuja *)
 exception InvalidMatrixAccess of string
 exception NonIntPixelReassignment of string
 exception IncorrectFlipExpr of string

@@ -1,3 +1,4 @@
+/* Authors: Maxwell Hu and Jacob Gold */
 /* Ocamlyacc parser for Pixl */
 
 %{
